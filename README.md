@@ -2,6 +2,12 @@
 
 Tarpaulin is a lightweight course management tool that serves as an "alternative" to Canvas. It allows instructors to create assignments for their courses and students to submit solutions to those assignments. 
 
+## System Diagram
+![System Diagram](./documentation/TarpaulinSystemArchitecture.png)
+
+## UML Diagram
+![UML Diagram](./documentation/TarpaulinUML.png)
+
 ## Entities
 
 ### Users
