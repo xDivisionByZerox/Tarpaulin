@@ -1,6 +1,6 @@
 # Tarpaulin
 
-Tarpaulin is a lightweight course management tool that serves as an "alternative" to Canvas. It allows instructors to create assignments for their courses and students to submit solutions to those assignments. The API you implement must support all the endpoints described in the Tarpaulin OpenAPI specification.
+Tarpaulin is a lightweight course management tool that serves as an "alternative" to Canvas. It allows instructors to create assignments for their courses and students to submit solutions to those assignments. 
 
 ## Entities
 
