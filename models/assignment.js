@@ -24,7 +24,7 @@ const AssignmentSchema = new mongoose.Schema({
         required: true,
         trim: true,
         get: (due) => due.toISOString(), // change to ISO 8601 format
-        set: function(due) {
+        set: function(due) { // Ensure storing a Date object
             if (due instanceof Date) {
                 return due;
             } else {
