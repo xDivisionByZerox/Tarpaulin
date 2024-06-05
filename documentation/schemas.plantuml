@@ -1,0 +1,126 @@
+@startuml
+
+title The Tarpaulin API Schemas Diagram
+
+entity Assignment {
+    courseId: AssignmentCourseId
+    title: String
+    points: Integer
+    due: Date
+}
+
+entity AssignmentCourseId {
+}
+
+entity AuthenticateUser200Response {
+    token: String
+}
+
+entity Course {
+    subject: String
+    number: String
+    title: String
+    term: String
+    instructorId: CourseInstructorId
+}
+
+entity CourseInstructorId {
+}
+
+entity CreateAssignment201Response {
+    id: CreateAssignment201ResponseId
+}
+
+entity CreateAssignment201ResponseId {
+}
+
+entity CreateCourse201Response {
+    id: CreateCourse201ResponseId
+}
+
+entity CreateCourse201ResponseId {
+}
+
+entity CreateSubmission201Response {
+    id: CreateSubmission201ResponseId
+}
+
+entity CreateSubmission201ResponseId {
+}
+
+entity CreateUser201Response {
+    id: CreateUser201ResponseId
+}
+
+entity CreateUser201ResponseId {
+}
+
+entity Error {
+    error: String
+}
+
+entity GetAllCourses200Response {
+    courses: List<Course>
+}
+
+entity GetAssignmentsByCourseId200Response {
+    assignments: List<Assignment>
+}
+
+entity GetStudentsByCourseId200Response {
+    students: List<User>
+}
+
+entity GetSubmissionsByAssignmentId200Response {
+    submissions: List<Submission>
+}
+
+entity GetSubmissionsByAssignmentIdIdParameter {
+}
+
+entity GetUserByIdIdParameter {
+}
+
+entity Submission {
+    assignmentId: SubmissionAssignmentId
+    studentId: SubmissionStudentId
+    timestamp: Date
+    grade: Float
+    file: String
+}
+
+entity SubmissionAssignmentId {
+}
+
+entity SubmissionStudentId {
+}
+
+entity UpdateEnrollmentByCourseIdRequest {
+    add: List<GetUserByIdIdParameter>
+    remove: List<GetUserByIdIdParameter>
+}
+
+entity User {
+    name: String
+    email: String
+    password: String
+    role: String
+}
+
+
+GetAllCourses200Response -- "0..*" Course : courses
+GetAssignmentsByCourseId200Response -- "0..*" Assignment : assignments
+CreateAssignment201Response -- CreateAssignment201ResponseId : id
+GetStudentsByCourseId200Response -- "0..*" User : students
+CreateSubmission201Response -- CreateSubmission201ResponseId : id
+Assignment -- AssignmentCourseId : courseId
+GetSubmissionsByAssignmentId200Response -- "0..*" Submission : submissions
+Course -- CourseInstructorId : instructorId
+CreateCourse201Response -- CreateCourse201ResponseId : id
+Submission -- SubmissionAssignmentId : assignmentId
+Submission -- SubmissionStudentId : studentId
+CreateUser201Response -- CreateUser201ResponseId : id
+UpdateEnrollmentByCourseIdRequest -- "0..*" GetUserByIdIdParameter : add
+UpdateEnrollmentByCourseIdRequest -- "0..*" GetUserByIdIdParameter : remove
+
+@enduml
