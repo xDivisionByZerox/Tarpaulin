@@ -1,8 +1,8 @@
+const mongoose = require('mongoose');
+
 /*
  * Schema for a Tarpaulin User
  */
-const mongoose = require('mongoose');
-
 const UserSchema = new mongoose.Schema({
     name: {
         type: String,
@@ -28,3 +28,4 @@ const UserSchema = new mongoose.Schema({
         default: 'student'
     }
 })
+exports.UserSchema = UserSchema
