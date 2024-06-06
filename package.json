@@ -6,7 +6,7 @@
   "scripts": {
     "prestart": "npm install",
     "start": "node server.js",
-    "initdb": "node initdb.js",
+    "initdb": "node initdb.js"
   },
   "keywords": [
     "swagger"
@@ -16,6 +16,7 @@
   "dependencies": {
     "connect": "^3.2.0",
     "dot-env": "^0.0.1",
+    "dotenv": "^16.4.5",
     "faker": "^6.6.6",
     "js-yaml": "^3.3.0",
     "mongoose": "^8.4.1",
