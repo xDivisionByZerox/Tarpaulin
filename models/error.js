@@ -13,4 +13,5 @@ const ErrorSchema = new mongoose.Schema({
         required: true
     }
 })
-exports.ErrorSchema = ErrorSchema
+const error = mongoose.model('Error', ErrorSchema)
+exports.error = error
