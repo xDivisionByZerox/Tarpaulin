@@ -1,4 +1,3 @@
-require('dotenv').config();
 /*
  * This file contains a simple script to populate the database with initial
  * data from the files in the data/ directory.  The following environment
@@ -16,7 +15,10 @@ require('dotenv').config();
  *   MONGO_CREATE_USER - The name of the user to create.
  *   MONGO_CREATE_PASSWORD - The password for the user.
  */
+require('dotenv').config();
 const mongoose = require('mongoose');
+const { User, Course, Assignment, Submission, Error } = require('./models');
+const faker = require('faker');
 
 const mongoHost = process.env.MONGO_HOST;
 const mongoPort = process.env.MONGO_PORT;
@@ -33,14 +35,13 @@ const options = {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 };
-``
 
 mongoose.connect(mongoUrl, options).then(async () => {
   console.log("Mongoose connection successful");
 
   try {
-    const insertedBusinesses = await Business.insertMany(require('./data/businesses.json'));
-    console.log("== Inserted businesses:", insertedBusinesses.map(b => b._id));
+    const insertedUsers = await User.insertMany(require('./data/user.json'));
+    console.log("== Inserted Users:", insertedUsers.map(b => b._id));
 
     // Create a new, lower-privileged database user if the correct environment variables were specified
     if (mongoCreateUser && mongoCreatePassword) {
@@ -63,4 +64,29 @@ async function createMongoUser(username, password) {
     roles: [{ role: "readWrite", db: mongoDbName }]
   });
   console.log("== New user created:", result);
+}
+
+async function generateFakeCourses(instructors, numCourses) {
+  const fakeCourses = [];
+  for (let i = 0; i < numCourses; i++) {
+    const instructor = instructors[Math.floor(Math.random() * instructors.length)];
+    fakeCourses.push({
+      subject: faker.random.arrayElement(['CS', 'MATH', 'PHYS', 'ENG', 'HIST']),
+      title: faker.lorem.words(3),
+      number: faker.random.number({ min: 1000, max: 9999 }).toString(),
+      instructorId: instructor._id,
+      term: faker.random.arrayElement(['sp24', 'su24', 'fa24', 'wi24']),
+    });
+  }
+  return fakeCourses;
+}
+
+
+async function generateCourses() {
+  try {
+    const instructors = await User.find({ role: 'instructor' });
+    const fakeCourses = generateFakeCourses(instructors, 10);
+
+    const insertedCourses = await Course.insertMany(fakeCourses);
+  }
 }
