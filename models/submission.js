@@ -28,4 +28,5 @@ const SubmissionSchema = new mongoose.Schema({
         required: true
     }
 })
-exports.SubmissionSchema = SubmissionSchema
+const Submission = mongoose.model('Submission', SubmissionSchema)
+exports.Submission = Submission
