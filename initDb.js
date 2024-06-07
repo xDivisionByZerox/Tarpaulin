@@ -88,5 +88,7 @@ async function generateCourses() {
     const fakeCourses = generateFakeCourses(instructors, 10);
 
     const insertedCourses = await Course.insertMany(fakeCourses);
+  } catch (error) {
+    console.error("Error during course generation:", error);
   }
 }
