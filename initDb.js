@@ -69,6 +69,35 @@ async function createMongoUser(username, password) {
   console.log("== New user created:", result);
 }
 
+async function generateFakeAssignments(courses, numAssignments) {
+  const fakeAssignments = [];
+  for (let i = 0; i < numAssignments; i++) {
+    const course = courses[Math.floor(Math.random() * courses.length)];
+    fakeAssignments.push({
+      course: course._id,
+      title: faker.lorem.words(3),
+      points: faker.random.number({ min: 10, max: 100 }),
+      due: faker.date.future(),
+    });
+  }
+  return fakeAssignments;
+}
+
+async function generateAssignments(numAssignments = 10) {
+  try {
+    const courses = await Course.find();
+    const fakeAssignments = generateFakeAssignments(courses, numAssignments);
+
+    const insertedAssignments = await Assignment.insertMany(fakeAssignments);
+    console.log("== Inserted Assignments:", insertedAssignments.map(b => b._id));
+
+    fs.writeFileSync('./data/assignment.json', JSON.stringify(insertedAssignments, null, 2));
+    console.log("== Assignment data written to file")
+  } catch (error) {
+    console.error("Error during assignment generation:", error);
+  }
+}
+
 
 async function generateFakeCourses(instructors, numCourses) {
   const fakeCourses = [];
