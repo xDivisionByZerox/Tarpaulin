@@ -18,11 +18,15 @@
 require('dotenv').config();
 const fs = require('fs');
 const mongoose = require('mongoose');
-const { User, Course, Assignment, Submission, Error } = require('./models');
+const { User } = require('./models/user.js');
+const { Course } = require('./models/course.js');
+const { Assignment } = require('./models/assignment.js');
+const { Submission } = require('./models/submission.js');
+const { Error } = require('./models/error.js');
 const faker = require('faker');
 
-const mongoHost = process.env.MONGO_HOST;
-const mongoPort = process.env.MONGO_PORT;
+const mongoHost = process.env.MONGO_HOST || 'localhost';
+const mongoPort = process.env.MONGO_PORT || 27017;
 const mongoUser = process.env.MONGO_USER;
 const mongoPassword = process.env.MONGO_PASSWORD;
 const mongoDbName = process.env.MONGO_DB_NAME;
@@ -31,6 +35,7 @@ const mongoCreateUser = process.env.MONGO_CREATE_USER;
 const mongoCreatePassword = process.env.MONGO_CREATE_PASSWORD;
 
 const mongoUrl = `mongodb://${mongoUser}:${mongoPassword}@${mongoHost}:${mongoPort}/${mongoAuthDbName}?authSource=${mongoDbName}`;
+// const mongoUrl = `mongodb://${mongoHost}/${mongoDbName}`;
 
 const options = {
   useNewUrlParser: true,
@@ -41,7 +46,8 @@ mongoose.connect(mongoUrl, options).then(async () => {
   console.log("Mongoose connection successful");
 
   try {
-    const insertedUsers = await User.insertMany(require('./data/user.json'));
+    await User.deleteMany({});
+    const insertedUsers = await User.insertMany(require('./data/users.json'));
     console.log("== Inserted Users:", insertedUsers.map(b => b._id));
 
     // Create a new, lower-privileged database user if the correct environment variables were specified
@@ -49,7 +55,7 @@ mongoose.connect(mongoUrl, options).then(async () => {
       await createMongoUser(mongoCreateUser, mongoCreatePassword);
     }
 
-    generateCourses();
+    await generateCourses();
 
   } catch (error) {
     console.error("Error during database operations:", error);
@@ -86,12 +92,12 @@ async function generateFakeAssignments(courses, numAssignments) {
 async function generateAssignments(numAssignments = 10) {
   try {
     const courses = await Course.find();
-    const fakeAssignments = generateFakeAssignments(courses, numAssignments);
+    const fakeAssignments = await generateFakeAssignments(courses, numAssignments);
 
     const insertedAssignments = await Assignment.insertMany(fakeAssignments);
     console.log("== Inserted Assignments:", insertedAssignments.map(b => b._id));
 
-    fs.writeFileSync('./data/assignment.json', JSON.stringify(insertedAssignments, null, 2));
+    fs.writeFileSync('./data/assignments.json', JSON.stringify(insertedAssignments, null, 2));
     console.log("== Assignment data written to file")
   } catch (error) {
     console.error("Error during assignment generation:", error);
@@ -117,12 +123,12 @@ async function generateFakeCourses(instructors, numCourses) {
 async function generateCourses(numCourses = 10) {
   try {
     const instructors = await User.find({ role: 'instructor' });
-    const fakeCourses = generateFakeCourses(instructors, numCourses);
+    const fakeCourses = await generateFakeCourses(instructors, numCourses);
 
     const insertedCourses = await Course.insertMany(fakeCourses);
     console.log("== Inserted Courses:", insertedCourses.map(b => b._id));
 
-    fs.writeFileSync('./data/course.json', JSON.stringify(insertedCourses, null, 2));
+    fs.writeFileSync('./data/courses.json', JSON.stringify(insertedCourses, null, 2));
     console.log("== Course data written to file")
   } catch (error) {
     console.error("Error during course generation:", error);
