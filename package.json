@@ -17,6 +17,7 @@
     "connect": "^3.2.0",
     "dotenv": "^16.4.5",
     "faker": "^6.6.6",
+    "fs": "^0.0.1-security",
     "js-yaml": "^3.3.0",
     "mongoose": "^8.4.1",
     "oas3-tools": "^2.2.3"
