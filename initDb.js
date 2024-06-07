@@ -69,6 +69,7 @@ async function createMongoUser(username, password) {
   console.log("== New user created:", result);
 }
 
+
 async function generateFakeCourses(instructors, numCourses) {
   const fakeCourses = [];
   for (let i = 0; i < numCourses; i++) {
@@ -84,10 +85,10 @@ async function generateFakeCourses(instructors, numCourses) {
   return fakeCourses;
 }
 
-async function generateCourses() {
+async function generateCourses(numCourses = 10) {
   try {
     const instructors = await User.find({ role: 'instructor' });
-    const fakeCourses = generateFakeCourses(instructors, 10);
+    const fakeCourses = generateFakeCourses(instructors, numCourses);
 
     const insertedCourses = await Course.insertMany(fakeCourses);
     console.log("== Inserted Courses:", insertedCourses.map(b => b._id));
