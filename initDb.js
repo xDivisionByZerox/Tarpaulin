@@ -16,6 +16,7 @@
  *   MONGO_CREATE_PASSWORD - The password for the user.
  */
 require('dotenv').config();
+const fs = require('fs');
 const mongoose = require('mongoose');
 const { User, Course, Assignment, Submission, Error } = require('./models');
 const faker = require('faker');
@@ -47,6 +48,8 @@ mongoose.connect(mongoUrl, options).then(async () => {
     if (mongoCreateUser && mongoCreatePassword) {
       await createMongoUser(mongoCreateUser, mongoCreatePassword);
     }
+
+    generateCourses();
 
   } catch (error) {
     console.error("Error during database operations:", error);
@@ -81,13 +84,16 @@ async function generateFakeCourses(instructors, numCourses) {
   return fakeCourses;
 }
 
-
 async function generateCourses() {
   try {
     const instructors = await User.find({ role: 'instructor' });
     const fakeCourses = generateFakeCourses(instructors, 10);
 
     const insertedCourses = await Course.insertMany(fakeCourses);
+    console.log("== Inserted Courses:", insertedCourses.map(b => b._id));
+
+    fs.writeFileSync('./data/course.json', JSON.stringify(insertedCourses, null, 2));
+    console.log("== Course data written to file")
   } catch (error) {
     console.error("Error during course generation:", error);
   }
