@@ -54,8 +54,11 @@ mongoose.connect(mongoUrl, options).then(async () => {
     if (mongoCreateUser && mongoCreatePassword) {
       await createMongoUser(mongoCreateUser, mongoCreatePassword);
     }
+    await Course.deleteMany({});
+    await Assignment.deleteMany({});
 
     await generateCourses();
+    await generateAssignments();
 
   } catch (error) {
     console.error("Error during database operations:", error);
@@ -80,7 +83,7 @@ async function generateFakeAssignments(courses, numAssignments) {
   for (let i = 0; i < numAssignments; i++) {
     const course = courses[Math.floor(Math.random() * courses.length)];
     fakeAssignments.push({
-      course: course._id,
+      courseId: course._id,
       title: faker.lorem.words(3),
       points: faker.random.number({ min: 10, max: 100 }),
       due: faker.date.future(),
