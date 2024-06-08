@@ -1,3 +1,28 @@
+class ValidationError extends Error { // 400
+    constructor(message) {
+        super(message);
+        this.name = 'ValidationError';
+    }
+}
+module.exports.ValidationError = ValidationError;
+
+class CredentialsError extends Error { // 401
+    constructor(message) {
+        super(message);
+        this.name = 'CredentialsError';
+    }
+}
+module.exports.CredentialsError = CredentialsError;
+
+class PermissionError extends Error { // 403
+    constructor(message) {
+        super(message);
+        this.name = 'PermissionError';
+    }
+}
+module.exports.PermissionError = PermissionError;
+
+
 module.exports.errorCodes = {
     400: {
         code: 400,
