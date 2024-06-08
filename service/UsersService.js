@@ -1,4 +1,7 @@
 'use strict';
+const { errorCodes } = require('../utils/errorCodes.js');
+const { User } = require('../models/user.js');
+
 
 
 /**
@@ -9,7 +12,7 @@
 
  * returns inline_response_200
  **/
-exports.authenticateUser = function(body) {
+module.exports.authenticateUser = function(body) {
   return new Promise(function(resolve, reject) {
     var examples = {};
     examples['application/json'] = {
@@ -31,16 +34,33 @@ exports.authenticateUser = function(body) {
  * body User A User object.
  * returns inline_response_201
  **/
-exports.createUser = function(body) {
-  return new Promise(function(resolve, reject) {
-    var examples = {};
-    examples['application/json'] = {
-  "id" : "123"
-};
-    if (Object.keys(examples).length > 0) {
-      resolve(examples[Object.keys(examples)[0]]);
-    } else {
+module.exports.createUser = function(body) {
+  return new Promise(async function(resolve, reject) {
+    try {
+      const {role, auth_role} = body;
+      console.log(errorCodes)
+
+
+      if (typeof(role) != 'string' || typeof(auth_role) != 'string') {
+        reject(errorCodes[400]);
+      }
+
+
+      if (auth_role != 'admin' && (role == 'instructor' || role == 'admin')) {
+        reject(errorCodes[403]);
+      }
+
+      const result = await User.findOne({where: {email: body.email}});
+      
+      if (result) {
+        reject(errorCodes[409]);
+      }
+
       resolve();
+
+
+    } catch (error) {
+      throw error;
     }
   });
 }
@@ -53,7 +73,7 @@ exports.createUser = function(body) {
  * id id Unique ID of a User.  Exact type/format will depend on your implementation but will likely be either an integer or a string. 
  * returns User
  **/
-exports.getUserById = function(id) {
+module.exports.getUserById = function(id) {
   return new Promise(function(resolve, reject) {
     var examples = {};
     examples['application/json'] = {
