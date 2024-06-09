@@ -7,54 +7,28 @@ class ServerError extends Error {
     }
 }
 
-class ValidationError extends Error { // 400
+class ValidationError extends ServerError { // 400
     constructor(message) {
-        super(message);
-        this.name = 'ValidationError';
+        super(message, 400);
     }
 }
-module.exports.ValidationError = ValidationError;
 
-class CredentialsError extends Error { // 401
+class CredentialsError extends ServerError { // 401
     constructor(message) {
-        super(message);
-        this.name = 'CredentialsError';
+        super(message, 401);
     }
 }
-module.exports.CredentialsError = CredentialsError;
 
-class PermissionError extends Error { // 403
+class PermissionError extends ServerError { // 403
     constructor(message) {
-        super(message);
-        this.name = 'PermissionError';
+        super(message, 403);
     }
 }
-module.exports.PermissionError = PermissionError;
 
 
-module.exports.errorCodes = {
-    400: {
-        code: 400,
-        payload: 'The request body was either not present or did not contain the required fields'
-    },
-    401: {
-        code: 401,
-        payload: 'The specified credentials were invalid.'
-    },
-    403: {
-        code: 403,
-        payload: 'The request was not made by an authenticated User satisfying the authorization criteria.'
-    },
-    404: {
-        code: 404,
-        payload: 'Specified object not found.'
-    },
-    409: {
-        code: 409,
-        payload: 'The given object already exists.'
-    },
-    500: {
-        code: 500,
-        payload: 'An internal server error occurred.'
-    }
+module.exports = {
+    ServerError,
+    ValidationError,
+    CredentialsError,
+    PermissionError
 }
