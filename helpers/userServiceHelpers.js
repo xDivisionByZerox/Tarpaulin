@@ -4,6 +4,11 @@ const { extractValidFields } = require('../utils/validation.js');
 const bcrypt = require('bcrypt');
 
 
+module.exports.checkLoginFields = async function(body) {
+  if (!body.email || !body.password) {
+    throw new ValidationError('The request body was either not present or did not contain all the required fields.');
+  }
+}
 
 module.exports.isAuthorizedToCreateUser = async function(role, auth_role) {
   if (typeof(role) != 'string' || typeof(auth_role) != 'string') {
@@ -16,6 +21,7 @@ module.exports.checkForExistingUser = async function(body) {
   if (existingUser) {
     throw new ConflictError('User already exists.');
   }
+  return existingUser;
 }
 
 module.exports.hashAndExtractUserFields = async function(body) {

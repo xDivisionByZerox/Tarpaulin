@@ -2,7 +2,7 @@
 const { User } = require('../models/user.js');
 const { validateAgainstModel, extractValidFields } = require('../utils/validation.js');
 const { ValidationError, PermissionError, ConflictError, NotFoundError, ServerError} = require('../utils/error.js');
-const { handleUserError, isAuthorizedToCreateUser, checkForExistingUser, hashAndExtractUserFields, createUser } = require('../helpers/userServiceHelpers.js');
+const { handleUserError, isAuthorizedToCreateUser, checkForExistingUser, hashAndExtractUserFields, createUser, checkLoginFields } = require('../helpers/userServiceHelpers.js');
 const bcrypt = require('bcrypt');
 
 
@@ -17,15 +17,10 @@ const bcrypt = require('bcrypt');
 module.exports.authenticateUser = function(body) {
   return new Promise(async function(resolve, reject) {
     try {
-      if (!body.email || !body.password) {
-        throw new ValidationError('The request body was either not present or did not contain all the required fields.');
-      }
-
-      const existingUser = await User.findOne({where: {email: body.email}});
-
-      if (!existingUser) {
-        throw new NotFoundError('User not found.');
-      }
+      const { existingUser } = await Promise.all([
+        checkLoginFields(body),
+        checkForExistingUser(body)
+      ]);
 
     } catch (error) {
       return reject(await handleUserError(error));
