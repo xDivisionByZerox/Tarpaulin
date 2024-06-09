@@ -16,10 +16,8 @@ const { generateToken } = require('../utils/auth.js');
 module.exports.authenticateUser = function(body) {
   return new Promise(async function(resolve, reject) {
     try {
-      const { existingUser } = await Promise.all([
-        checkLoginFields(body),
-        getExistingUser(body)
-      ]);
+      await checkLoginFields(body);
+      const existingUser = await getExistingUser(body);
 
       await checkIfAuthenticated(body, existingUser);
       const token = await generateToken(existingUser._id);
