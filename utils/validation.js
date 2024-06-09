@@ -1,7 +1,5 @@
-```
-Validation Functions:
-Used by various services to ensure data is as expected
-```
+// Validation Functions:
+// Used by various services to ensure data is as expected
 const { ValidationError } = require('../utils/error.js');
 
 module.exports.validateAgainstModel = function (obj, model) {
