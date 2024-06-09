@@ -27,3 +27,14 @@ module.exports.getRedisClient = () => {
     }
     return redisClient;
 }
+
+module.exports.rateLimiter = async (req, res, next) => {
+    try {
+        const rateLimitWindowMilliseconds = 60000;
+        const rateLimitWindowMaxRequests = 5;
+        const clientIp = req.ip;
+
+    } catch (err) {
+        throw new ServerError('Error in rate limiter:', err);
+    }
+}
