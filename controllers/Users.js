@@ -10,8 +10,8 @@ module.exports.authenticateUser = function authenticateUser (req, res, next, bod
     .then(function (response) {
       utils.writeJson(res, response);
     })
-    .catch(function (response) {
-      utils.writeJson(res, response);
+    .catch(function (error) {
+      errorHandler(res, error);
     });
 };
 
@@ -27,7 +27,7 @@ module.exports.createUser = function createUser (req, res, next, body) {
     })
 
     .catch(function (error) {
-      errorHandler(error, res);
+      errorHandler(res, error);
     })
 };
 
