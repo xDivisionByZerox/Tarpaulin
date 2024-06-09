@@ -1,3 +1,8 @@
+```
+Validation Functions:
+Used by various services to ensure data is as expected
+```
+
 module.exports.validateAgainstModel = function (obj, model) {
     return new Promise((resolve, reject) => {
         if (obj && model) {

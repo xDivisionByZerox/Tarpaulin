@@ -4,6 +4,10 @@ var utils = require('../utils/writer.js');
 var Users = require('../service/UsersService');
 const { requireAuth, checkPermissions } = require('../utils/auth.js');
 
+```
+Controllers call coresponding services, then passes response to Json writer to create response
+```
+
 module.exports.authenticateUser = function authenticateUser (req, res, next, body) {
   Users.authenticateUser(body)
     .then(function (response) {
@@ -15,6 +19,9 @@ module.exports.authenticateUser = function authenticateUser (req, res, next, bod
 };
 
 module.exports.createUser = function createUser (req, res, next, body) {
+  ```
+  If user has permissions to create a user, runs create user service
+  ```
   checkPermissions(req, res, next, body).then(() => {
     Users.createUser(body)
       .then(function (response) {

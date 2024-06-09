@@ -50,7 +50,6 @@ module.exports.createUser = function(body) {
       }
 
       const existingUser = await User.findOne({where: {email: body.email}});
-      
       if (existingUser) {
         return reject(errorCodes[409]);
       }
@@ -59,6 +58,7 @@ module.exports.createUser = function(body) {
         return reject(errorCodes[400]);
       }
 
+      //If passes error checks, create user
       const userFields = extractValidFields(body, User);
       const createdUser = await User.create(userFields);
       const response = {

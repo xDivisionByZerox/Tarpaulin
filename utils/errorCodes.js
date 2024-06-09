@@ -1,3 +1,7 @@
+```
+Dictionary of Error codes
+```
+
 module.exports.errorCodes = {
     400: {
         code: 400,
