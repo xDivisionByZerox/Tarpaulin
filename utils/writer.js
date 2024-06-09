@@ -15,7 +15,7 @@ var writeJson = exports.writeJson = (response, arg1, arg2) => {
   var code;
   var payload;
 
-  if(arg1 && arg1 instanceof ResponsePayload) {
+  if(arg1 && arg2 instanceof ResponsePayload) {
     writeJson(response, arg1.payload, arg1.code);
     return;
   }
