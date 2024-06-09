@@ -4,13 +4,18 @@ const redisPort = process.env.REDIS_PORT || 6379;
 const redis = require('redis');
 
 
+
 let redisClient;
 
-async function connectToRedis() {
-  redisClient = redis.createClient({
-      url: `redis://${redisHost}:${redisPort}`
-  });
-
-  await redisClient.connect();
+module.exports.connectToRedis = async function connectToRedis() {
+    try{
+        redisClient = redis.createClient({
+            url: `redis://${redisHost}:${redisPort}`
+        });
+        await redisClient.connect();
+    } catch (err) {
+        console.error('Error connecting to Redis:', err);
+        process.exit(1);
+    }
 }
 
