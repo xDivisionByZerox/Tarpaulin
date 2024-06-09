@@ -28,13 +28,29 @@ module.exports.getRedisClient = () => {
     return redisClient;
 }
 
+async function getTokenBucket(ip) {
+    let tokenBucket = await redisClient.hGetAll(ip);
+
+    if (!tokenBucket) {
+        tokenBucket = {
+          tokens: parseFloat(tokenBucket.tokens) ||
+            rateLimitWindowMaxRequests,
+          last: parseInt(tokenBucket.last) || Date.now()
+        };
+    }
+
+    return tokenBucket;
+}
+
 module.exports.rateLimiter = async (req, res, next) => {
     try {
-        const rateLimitWindowMilliseconds = 60000;
-        const rateLimitWindowMaxRequests = 5;
-        const clientIp = req.ip;
+        let tokenBucket = await getTokenBucket(req.ip);
+
 
     } catch (err) {
-        throw new ServerError('Error in rate limiter:', err);
+        // throw new ServerError('Error getting token bucket:', err);
+        // If error, turn off rate limiter
+        next();
+        return;
     }
 }
