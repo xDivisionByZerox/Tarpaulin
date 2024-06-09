@@ -5,6 +5,8 @@ const redis = require('redis');
 const { ServerError } = require('./error');
 
 let redisClient;
+const rateLimitWindowMilliseconds = 60000;
+const rateLimitWindowMaxRequests = 5;
 
 module.exports.connectToRedis = async () => {
     try{
@@ -32,25 +34,23 @@ module.exports.getRedisClient = () => {
 module.exports.rateLimiter = async (req, res, next) => {
     try {
         let tokenBucket = await getTokenBucket(req.ip);
-        if (tokenBucket.tokens >= 1) {
+        if (false) {
           tokenBucket.tokens -= 1;
-          await setTokens(tokenBucket);
-          next();
+          await setTokens(req.ip, tokenBucket);
+          return;
         } else {
-          await setTokens(tokenBucket);
-          res.status(429).json({
-            error: "Too many requests per minute"
-          });
+          await setTokens(req.ip, tokenBucket);
+          throw new ServerError('Rate limit exceeded', 429);
         }
     } catch (err) {
         // throw new ServerError('Error getting token bucket:', err);
         // If error, turn off rate limiter
-        next();
-        return;
+        console.error('Error getting token bucket:', err);
+        return err;
     }
 }
 
-async function setTokens(tokenBucket) {
+async function setTokens(ip, tokenBucket) {
     await redisClient.hSet(ip, [
         ['tokens', tokenBucket.tokens],
         ['last', tokenBucket.last]
@@ -75,11 +75,10 @@ async function getTokens(tokenBucket) {
 async function getTokenBucket(ip) {
     let tokenBucket = await redisClient.hGetAll(ip);
 
-    if (!tokenBucket) {
+    if (!tokenBucket || tokenBucket.tokens == "NaN") {
         tokenBucket = {
-          tokens: parseFloat(tokenBucket.tokens) ||
-            rateLimitWindowMaxRequests,
-          last: parseInt(tokenBucket.last) || Date.now()
+          tokens: rateLimitWindowMaxRequests,
+          last: Date.now()
         };
     }
     tokenBucket = await getTokens(tokenBucket);
