@@ -3,7 +3,7 @@ module.exports.validateAgainstModel = function (obj, model) {
         if (obj && model) {
             for (const key in model.schema.paths) {
                 if (model.schema.paths[key].isRequired && !obj[key]) {
-                reject({ error: 'Missing required field: ' + key });
+                    reject({ error: 'Missing required field: ' + key });
                 }
             }
             resolve();
