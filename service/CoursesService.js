@@ -8,8 +8,8 @@
  * body Course A Course object.
  * returns inline_response_201_1
  **/
-exports.createCourse = function(body) {
-  return new Promise(function(resolve, reject) {
+exports.createCourse = (body) => {
+  return new Promise((resolve, reject) =>{
     var examples = {};
     examples['application/json'] = {
   "id" : "123"
@@ -33,8 +33,8 @@ exports.createCourse = function(body) {
  * term String Fetch only Courses in the specified academic term.  (optional)
  * returns inline_response_200_1
  **/
-exports.getAllCourses = function(page,subject,number,term) {
-  return new Promise(function(resolve, reject) {
+exports.getAllCourses = (page,subject,number,term) => {
+  return new Promise((resolve, reject) => {
     var examples = {};
     examples['application/json'] = {
   "courses" : [ {
@@ -67,8 +67,8 @@ exports.getAllCourses = function(page,subject,number,term) {
  * id id_4 Unique ID of a Course.  Exact type/format will depend on your implementation but will likely be either an integer or a string. 
  * returns inline_response_200_3
  **/
-exports.getAssignmentsByCourseId = function(id) {
-  return new Promise(function(resolve, reject) {
+exports.getAssignmentsByCourseId = (id) => {
+  return new Promise((resolve, reject) => {
     var examples = {};
     examples['application/json'] = {
   "assignments" : [ {
@@ -99,8 +99,8 @@ exports.getAssignmentsByCourseId = function(id) {
  * id id_1 Unique ID of a Course.  Exact type/format will depend on your implementation but will likely be either an integer or a string. 
  * returns Course
  **/
-exports.getCourseById = function(id) {
-  return new Promise(function(resolve, reject) {
+exports.getCourseById = (id) => {
+  return new Promise((resolve, reject) => {
     var examples = {};
     examples['application/json'] = {
   "number" : "493",
@@ -125,8 +125,8 @@ exports.getCourseById = function(id) {
  * id id_3 Unique ID of a Course.  Exact type/format will depend on your implementation but will likely be either an integer or a string. 
  * returns String
  **/
-exports.getRosterByCourseId = function(id) {
-  return new Promise(function(resolve, reject) {
+exports.getRosterByCourseId = (id) => {
+  return new Promise((resolve, reject) => {
     var examples = {};
     examples['application/json'] = "123,\"Jane Doe\",doej@oregonstate.edu\n...\n";
     if (Object.keys(examples).length > 0) {
@@ -145,8 +145,8 @@ exports.getRosterByCourseId = function(id) {
  * id id_2 Unique ID of a Course.  Exact type/format will depend on your implementation but will likely be either an integer or a string. 
  * returns inline_response_200_2
  **/
-exports.getStudentsByCourseId = function(id) {
-  return new Promise(function(resolve, reject) {
+exports.getStudentsByCourseId = (id) => {
+  return new Promise((resolve, reject) => {
     var examples = {};
     examples['application/json'] = {
   "students" : [ {
@@ -177,8 +177,8 @@ exports.getStudentsByCourseId = function(id) {
  * id id_1 Unique ID of a Course.  Exact type/format will depend on your implementation but will likely be either an integer or a string. 
  * no response value expected for this operation
  **/
-exports.removeCourseById = function(id) {
-  return new Promise(function(resolve, reject) {
+exports.removeCourseById = (id) => {
+  return new Promise((resolve, reject) => {
     resolve();
   });
 }
@@ -193,8 +193,8 @@ exports.removeCourseById = function(id) {
  * id id_1 Unique ID of a Course.  Exact type/format will depend on your implementation but will likely be either an integer or a string. 
  * no response value expected for this operation
  **/
-exports.updateCourseById = function(body,id) {
-  return new Promise(function(resolve, reject) {
+exports.updateCourseById = (body,id) => {
+  return new Promise((resolve, reject) => {
     resolve();
   });
 }
@@ -209,8 +209,8 @@ exports.updateCourseById = function(body,id) {
  * id id_2 Unique ID of a Course.  Exact type/format will depend on your implementation but will likely be either an integer or a string. 
  * no response value expected for this operation
  **/
-exports.updateEnrollmentByCourseId = function(body,id) {
-  return new Promise(function(resolve, reject) {
+exports.updateEnrollmentByCourseId = (body,id) => {
+  return new Promise((resolve, reject) => {
     resolve();
   });
 }
