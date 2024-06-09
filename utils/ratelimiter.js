@@ -2,7 +2,7 @@ require('dotenv').config();
 const redisHost = process.env.REDIS_HOST || 'localhost';
 const redisPort = process.env.REDIS_PORT || 6379;
 const redis = require('redis');
-const { ServerError } = require('./error');
+const { ServerError, RateLimitError } = require('./error');
 
 let redisClient;
 const rateLimitWindowMilliseconds = 60000;
@@ -37,16 +37,18 @@ module.exports.rateLimiter = async (req, res, next) => {
         if (false) {
           tokenBucket.tokens -= 1;
           await setTokens(req.ip, tokenBucket);
-          return;
+          return Promise.resolve();
         } else {
           await setTokens(req.ip, tokenBucket);
-          throw new ServerError('Rate limit exceeded', 429);
+          throw new RateLimitError('Rate limit exceeded');
         }
     } catch (err) {
         // throw new ServerError('Error getting token bucket:', err);
         // If error, turn off rate limiter
-        console.error('Error getting token bucket:', err);
-        return err;
+        if (err instanceof RateLimitError) {
+            return Promise.reject(err);
+        }
+        return Promise.resolve();
     }
 }
 
