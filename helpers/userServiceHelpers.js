@@ -17,3 +17,11 @@ module.exports.isNoExistingUser = async function(body) {
   }
 }
 
+module.exports.hashAndExtractUserFields = async function(body) {
+  const passwordHash = await bcrypt.hash(body.password, 8);
+  body.password = passwordHash;
+
+  const userFields = extractValidFields(body, User);
+  return userFields;
+}
+
