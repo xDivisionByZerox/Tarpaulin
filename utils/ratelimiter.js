@@ -41,10 +41,7 @@ module.exports.rateLimiter = async (req, res, next) => {
           res.status(429).json({
             error: "Too many requests per minute"
           });
-
         }
-
-
     } catch (err) {
         // throw new ServerError('Error getting token bucket:', err);
         // If error, turn off rate limiter
