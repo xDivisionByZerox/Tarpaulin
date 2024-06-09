@@ -4,8 +4,14 @@ const { User } = require('../models/user')
 const secret_key = process.env.JWT_SECRET
 
 function generateToken(user_id) {
-    return new Promise(() => {
-        return jwt.sign({ user_id }, secret_key, { expiresIn: '24h' });
+    return new Promise((resolve, reject) => {
+        jwt.sign({ user_id }, secret_key, { expiresIn: '24h' }, (err, token) => {
+            if (err) {
+                reject(err);
+            } else {
+                resolve(token);
+            }
+        });
     });
 }
 
