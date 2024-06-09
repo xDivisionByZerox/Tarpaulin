@@ -1,6 +1,4 @@
-```
-Authorization 
-```
+// Authorization 
 
 
 const jwt = require('jsonwebtoken')
