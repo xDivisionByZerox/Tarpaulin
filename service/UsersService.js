@@ -2,7 +2,7 @@
 const { User } = require('../models/user.js');
 const { validateAgainstModel, extractValidFields } = require('../utils/validation.js');
 const { ValidationError, PermissionError, ConflictError, ServerError} = require('../utils/error.js');
-const {isAuthorizedToCreateUser, isNoExistingUser, hashExtractAndCreateUser} = require('../helpers/userServiceHelpers.js');
+const { isAuthorizedToCreateUser, checkForExistingUser, hashAndExtractUserFields, createUser } = require('../helpers/userServiceHelpers.js');
 
 
 
@@ -42,16 +42,18 @@ module.exports.createUser = function(body) {
       await User.deleteMany(); // DELETE IN PRODUCTION
       const {role, auth_role} = body;
 
-      await validateAgainstModel(body, User);
-
-      isAuthorizedToCreateUser(role, auth_role);
-      await checkForExistingUser(body);
+      await Promise.all([
+        validateAgainstModel(body, User),
+        isAuthorizedToCreateUser(role, auth_role),
+        checkForExistingUser(body)
+      ]);
 
       const userFields = await hashAndExtractUserFields(body);
       const response = await createUser(userFields);
 
       return resolve(response);
     } catch (error) {
+      console.log('Error when creating User:', error);
 
       if (!(error instanceof ServerError)) {
         return reject(new ServerError('An error occurred while creating a new User.'));
