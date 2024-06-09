@@ -3,6 +3,7 @@
 var utils = require('../utils/writer.js');
 var Users = require('../service/UsersService');
 const { requireAuth, checkPermissions } = require('../utils/auth.js');
+const { errorHandler }= require('../middleware/errorHandler');
 
 module.exports.authenticateUser = function authenticateUser (req, res, next, body) {
   Users.authenticateUser(body)
@@ -22,14 +23,11 @@ module.exports.createUser = function createUser (req, res, next, body) {
     })
 
     .then(function (response) {
-      console.log("1")
       utils.writeJson(res, response);
     })
 
-    .catch(function (response) {
-      console.log("2")
-      console.log(response)
-      next(response)
+    .catch(function (error) {
+      errorHandler(error, res);
     })
 };
 
