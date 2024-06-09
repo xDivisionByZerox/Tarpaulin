@@ -1,5 +1,10 @@
 'use strict';
 
+const { errorCodes } = require('../utils/error.js');
+const { Course } = require('../models/course.js');
+const { Assignment } = require('../models/assignment.js');
+const { validateAgainstModel, extractValidFields } = require('../utils/validation.js');
+
 
 /**
  * Create a new course.
@@ -9,16 +14,40 @@
  * returns inline_response_201_1
  **/
 exports.createCourse = function(body) {
-  return new Promise(function(resolve, reject) {
-    var examples = {};
-    examples['application/json'] = {
-  "id" : "123"
-};
-    if (Object.keys(examples).length > 0) {
-      resolve(examples[Object.keys(examples)[0]]);
-    } else {
-      resolve();
+  return new Promise(async function(resolve, reject) {
+    try{
+      const {role, auth_role} = body;
+
+      if (typeof(role) != 'string' || typeof(auth_role) != 'string') {
+        return reject(errorCodes[400]);
+      }
+
+      if (auth_role != 'admin' && role == 'admin') { //difference between role and auth_role?
+        return reject(errorCodes[403]);
+      }
+
+      const courseFields = extractValidFields(body, Course);
+      const createdCourse = await Course.create(courseFields);
+      const response = {
+        id: createdCourse._id
+      };
+
+      resolve(response);
     }
+    catch (error) {
+      console.log(error)
+      reject(errorCodes[500]);
+    }
+    //commented out example endpoint. Requires removing of try/catch
+//     var examples = {};
+//     examples['application/json'] = {
+//   "id" : "123"
+// };
+//     if (Object.keys(examples).length > 0) {
+//       resolve(examples[Object.keys(examples)[0]]);
+//     } else {
+//       resolve();
+//     }
   });
 }
 
@@ -68,7 +97,29 @@ exports.getAllCourses = function(page,subject,number,term) {
  * returns inline_response_200_3
  **/
 exports.getAssignmentsByCourseId = function(id) {
-  return new Promise(function(resolve, reject) {
+  return new Promise(async function(resolve, reject) {
+
+      //UNFINISHED
+    try{
+      const courseExist = await Course.countDocuments({id: id }).count().exec(); //ensure id exists
+      if (courseExist != 1){
+        return reject(errorCodes[404]);
+      }
+      
+      //check all assignments and find all that match, and store them into a variable?
+      const foundAssignments = await Assignment.find({courseId: id})
+
+      const courseFields = extractValidFields(body, Course);
+      const createdCourse = await Course.create(courseFields);
+      const response = {
+        id: createdCourse._id
+      };
+
+    }
+    catch{
+
+    }
+
     var examples = {};
     examples['application/json'] = {
   "assignments" : [ {
@@ -100,20 +151,45 @@ exports.getAssignmentsByCourseId = function(id) {
  * returns Course
  **/
 exports.getCourseById = function(id) {
-  return new Promise(function(resolve, reject) {
-    var examples = {};
-    examples['application/json'] = {
-  "number" : "493",
-  "subject" : "CS",
-  "term" : "sp22",
-  "title" : "Cloud Application Development",
-  "instructorId" : "123"
-};
-    if (Object.keys(examples).length > 0) {
-      resolve(examples[Object.keys(examples)[0]]);
-    } else {
-      resolve();
+  return new Promise(async function(resolve, reject) {
+
+    try{
+      const courseExist = await Course.countDocuments({id: id }).count().exec(); //ensure id exists
+      if (courseExist != 1){
+        return reject(errorCodes[404]);
+      }
+      //does it need error checking if in try/except block?
+      const foundCourse = await Course.findById({id: id})
+      const response = {
+        id: foundCourse._id,
+        subject: foundCourse.subject,
+        number: foundCourse.number,
+        title: foundCourse.title,
+        term: foundCourse.term,
+        instructorId: foundCourse.instructorId
+      };
+      resolve(response)
+      
     }
+    catch (error){
+      console.log(error)
+      reject(errorCodes[500]);
+    }
+
+    //prior example code, keeping around until tested
+//     var examples = {};
+//     examples['application/json'] = {
+//   "number" : "493",
+//   "subject" : "CS",
+//   "term" : "sp22",
+//   "title" : "Cloud Application Development",
+//   "instructorId" : "123"
+// };
+//     if (Object.keys(examples).length > 0) {
+//       resolve(examples[Object.keys(examples)[0]]);
+//     } else {
+//       resolve();
+//     }
   });
 }
 
@@ -178,8 +254,18 @@ exports.getStudentsByCourseId = function(id) {
  * no response value expected for this operation
  **/
 exports.removeCourseById = function(id) {
-  return new Promise(function(resolve, reject) {
-    resolve();
+  return new Promise(async function(resolve, reject) {
+    try{
+      const courseExist = await Course.countDocuments({_id: id }).count().exec(); //ensure id exists
+      if (courseExist != 1){
+        return reject(errorCodes[404]);
+      }
+      await Course.deleteOne(id)
+    }
+    catch (error){
+      console.log(error)
+      reject(errorCodes[500]);
+    }
   });
 }
 
@@ -194,8 +280,33 @@ exports.removeCourseById = function(id) {
  * no response value expected for this operation
  **/
 exports.updateCourseById = function(body,id) {
-  return new Promise(function(resolve, reject) {
-    resolve();
+  return new Promise(async function(resolve, reject) {
+    try{
+      const {role, auth_role} = body;
+      if (typeof(role) != 'string' || typeof(auth_role) != 'string') {
+        return reject(errorCodes[400]);
+      }
+      if (auth_role != 'admin') { //difference between role and auth_role?
+        return reject(errorCodes[403]);
+      }
+
+      const courseFields = extractValidFields(body, Course);
+      const updatedCourse = await Course.updateOne({_id: id }, courseFields); // This might not be the exact way to do this
+      const response = {
+        id: updatedCourse._id,
+        subject: updatedCourse.subject,
+        number: updatedCourse.number,
+        title: updatedCourse.title,
+        term: updatedCourse.term,
+        instructorId: updatedCourse.instructorId
+      };
+
+      resolve(response);
+    }
+    catch (error) {
+      console.log(error)
+      reject(errorCodes[500]);
+    }
   });
 }
 
