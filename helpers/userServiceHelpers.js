@@ -1,4 +1,4 @@
-const { ValidationError, PermissionError, ConflictError, ServerError} = require('../utils/error.js');
+const { ValidationError, PermissionError, ConflictError, ServerError, NotFoundError} = require('../utils/error.js');
 const { User } = require('../models/user.js');
 const { extractValidFields } = require('../utils/validation.js');
 const bcrypt = require('bcrypt');
@@ -16,12 +16,19 @@ module.exports.isAuthorizedToCreateUser = async function(role, auth_role) {
   }
 }
 
+module.exports.getExistingUser = async function(body) {
+  const existingUser = await User.findOne({where: {email: body.email}});
+  if (!existingUser) {
+    throw new NotFoundError('User not found.');
+  }
+  return existingUser;
+}
+
 module.exports.checkForExistingUser = async function(body) {
   const existingUser = await User.findOne({where: {email: body.email}});
   if (existingUser) {
     throw new ConflictError('User already exists.');
   }
-  return existingUser;
 }
 
 module.exports.hashAndExtractUserFields = async function(body) {
