@@ -24,7 +24,7 @@ if (mongoHost == 'localhost') {
 
 
 // Database connection
-exports.connectToDb = async function (callback) {
+exports.connectToDb = async (callback) => {
   await mongoose.connect(mongoUrl)
     .then(() => {
       console.log('Mongoose connection successful');
@@ -37,7 +37,7 @@ exports.connectToDb = async function (callback) {
 };
 
 // Get database instance
-exports.getDbReference = function () {
+exports.getDbReference = () => {
   return mongoose.connection;
 };
 
