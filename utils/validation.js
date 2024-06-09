@@ -1,14 +1,16 @@
+const { ValidationError } = require('../utils/error.js');
+
 module.exports.validateAgainstModel = function (obj, model) {
     return new Promise((resolve, reject) => {
         if (obj && model) {
             for (const key in model.schema.paths) {
                 if (model.schema.paths[key].isRequired && !obj[key]) {
-                    reject({ error: 'Missing required field: ' + key });
+                    throw new ValidationError('Missing required field: ' + key);
                 }
             }
-            resolve();
+            return resolve();
         } else {
-        reject({ error: 'Invalid arguments' });
+        throw new ValidationError('Object not defined.');
         }
     });
 }
