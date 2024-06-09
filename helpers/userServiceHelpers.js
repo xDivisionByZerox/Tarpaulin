@@ -25,7 +25,7 @@ module.exports.isAuthorizedToCreateUser = async function(role, auth_role) {
 }
 
 module.exports.getExistingUser = async function(body) {
-  const existingUser = await User.findOne({where: {email: body.email}});
+  const existingUser = await User.findOne({email: body.email});
   if (!existingUser) {
     throw new NotFoundError('User not found.');
   }
@@ -33,7 +33,7 @@ module.exports.getExistingUser = async function(body) {
 }
 
 module.exports.checkForExistingUser = async function(body) {
-  const existingUser = await User.findOne({where: {email: body.email}});
+  const existingUser = await User.findOne({email: body.email});
   if (existingUser) {
     throw new ConflictError('User already exists.');
   }
