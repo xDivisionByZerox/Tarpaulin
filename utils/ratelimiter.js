@@ -8,10 +8,14 @@ let redisClient;
 
 module.exports.connectToRedis = async () => {
     try{
+        console.log(`Connecting to Redis at ${redisHost}:${redisPort}`);
         redisClient = redis.createClient({
-            url: `redis://${redisHost}:${redisPort}`
+            url: `redis://${redisHost}`
         });
         await redisClient.connect();
+        redisClient.on('connect', () => {
+            console.log('Connected to Redis');
+        });
     } catch (err) {
         throw new ServerError('Error connecting to Redis:', err);
     }
