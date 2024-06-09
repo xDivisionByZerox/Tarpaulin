@@ -31,25 +31,27 @@ module.exports.getRedisClient = () => {
 }
 
 
-module.exports.rateLimiter = async (req, res, next) => {
-    try {
-        let tokenBucket = await getTokenBucket(req.ip);
-        if (false) {
-          tokenBucket.tokens -= 1;
-          await setTokens(req.ip, tokenBucket);
-          return Promise.resolve();
-        } else {
-          await setTokens(req.ip, tokenBucket);
-          throw new RateLimitError('Rate limit exceeded');
+module.exports.rateLimiter = (req, res, next) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            let tokenBucket = await getTokenBucket(req.ip);
+            if (tokenBucket.tokens >= 1) {
+              tokenBucket.tokens -= 1;
+              await setTokens(req.ip, tokenBucket);
+              return resolve();
+            } else {
+              await setTokens(req.ip, tokenBucket);
+              throw new RateLimitError('Rate limit exceeded');
+            }
+        } catch (err) {
+            // throw new ServerError('Error getting token bucket:', err);
+            if (err instanceof RateLimitError) {
+                return reject(err);
+            }
+            // If error, turn off rate limiter
+            return resolve;
         }
-    } catch (err) {
-        // throw new ServerError('Error getting token bucket:', err);
-        // If error, turn off rate limiter
-        if (err instanceof RateLimitError) {
-            return Promise.reject(err);
-        }
-        return Promise.resolve();
-    }
+    });
 }
 
 async function setTokens(ip, tokenBucket) {
