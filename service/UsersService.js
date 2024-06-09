@@ -1,9 +1,7 @@
 'use strict';
 const { User } = require('../models/user.js');
 const { validateAgainstModel, extractValidFields } = require('../utils/validation.js');
-const { ValidationError, PermissionError, ConflictError, NotFoundError, ServerError} = require('../utils/error.js');
 const { handleUserError, isAuthorizedToCreateUser, checkForExistingUser, hashAndExtractUserFields, createUser, checkLoginFields, getExistingUser, checkIfAuthenticated } = require('../helpers/userServiceHelpers.js');
-const bcrypt = require('bcrypt');
 const { generateToken } = require('../utils/auth.js');
 
 
