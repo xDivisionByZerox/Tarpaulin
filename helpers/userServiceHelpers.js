@@ -4,6 +4,7 @@ const { extractValidFields } = require('../utils/validation.js');
 const bcrypt = require('bcrypt');
 
 
+
 module.exports.isAuthorizedToCreateUser = async function(role, auth_role) {
   if (typeof(role) != 'string' || typeof(auth_role) != 'string') {
     throw new ValidationError('The request body was either not present or did not contain a valid User object.');
@@ -36,4 +37,11 @@ module.exports.createUser = async function(userFields) {
   };
 
   return response;
+}
+
+module.exports.handleUserError = async function(error) {
+  if (!(error instanceof ServerError)) {
+    return new ServerError('An error occurred while creating a new User.');
+  }
+  return error;
 }

@@ -2,7 +2,7 @@
 const { User } = require('../models/user.js');
 const { validateAgainstModel, extractValidFields } = require('../utils/validation.js');
 const { ValidationError, PermissionError, ConflictError, ServerError} = require('../utils/error.js');
-const { isAuthorizedToCreateUser, checkForExistingUser, hashAndExtractUserFields, createUser } = require('../helpers/userServiceHelpers.js');
+const { handleUserError, isAuthorizedToCreateUser, checkForExistingUser, hashAndExtractUserFields, createUser } = require('../helpers/userServiceHelpers.js');
 
 
 
@@ -16,15 +16,11 @@ const { isAuthorizedToCreateUser, checkForExistingUser, hashAndExtractUserFields
  **/
 module.exports.authenticateUser = function(body) {
   return new Promise(function(resolve, reject) {
-    var examples = {};
-    examples['application/json'] = {
-  "token" : "aaaaaaaa.bbbbbbbb.cccccccc"
-};
-    if (Object.keys(examples).length > 0) {
-      resolve(examples[Object.keys(examples)[0]]);
-    } else {
-      resolve();
+    try {
+
+    } catch (error) {
     }
+
   });
 }
 
@@ -53,13 +49,7 @@ module.exports.createUser = function(body) {
 
       return resolve(response);
     } catch (error) {
-      console.log('Error when creating User:', error);
-
-      if (!(error instanceof ServerError)) {
-        return reject(new ServerError('An error occurred while creating a new User.'));
-      }
-
-      return reject(error);
+      return reject(await handleUserError(error));
     }
   });
 }
