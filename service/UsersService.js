@@ -42,9 +42,7 @@ module.exports.createUser = function(body) {
       await User.deleteMany(); // DELETE IN PRODUCTION
       const {role, auth_role} = body;
 
-      validateAgainstModel(body, User).catch((error) => {
-        throw new ValidationError('The request body was either not present or did not contain a valid User object.');
-      });
+      await validateAgainstModel(body, User);
 
       if (typeof(role) != 'string' || typeof(auth_role) != 'string') {
         throw new ValidationError('The request body was either not present or did not contain a valid User object.');
@@ -69,14 +67,14 @@ module.exports.createUser = function(body) {
         id: createdUser._id
       };
 
-      resolve(response);
+      return resolve(response);
     } catch (error) {
 
       if (!(error instanceof ServerError)) {
-        reject(new ServerError('An error occurred while creating a new User.'));
+        return reject(new ServerError('An error occurred while creating a new User.'));
       }
 
-      reject(error);
+      return reject(error);
     }
   });
 }
