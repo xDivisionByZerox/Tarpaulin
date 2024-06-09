@@ -49,7 +49,6 @@ function checkPermissions(req, res, next, body) {
                     resolve();
                 });
         } catch (error) {
-            console.error('Error checking permission: ', error);
             body.auth_role = 'student';
             resolve();
         }
