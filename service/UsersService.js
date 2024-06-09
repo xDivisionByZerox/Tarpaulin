@@ -6,6 +6,8 @@ const bcrypt = require('bcrypt');
 const { ValidationError, PermissionError, ConflictError, ServerError} = require('../utils/error.js');
 
 
+
+
 /**
  * Log in a User.
  * Authenticate a specific User with their email address and password. 
