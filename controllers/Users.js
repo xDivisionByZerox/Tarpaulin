@@ -7,9 +7,11 @@ const { errorHandler }= require('../middleware/errorHandler');
 
 module.exports.authenticateUser = function authenticateUser (req, res, next, body) {
   Users.authenticateUser(body)
+
     .then(function (response) {
       utils.writeJson(res, response);
     })
+
     .catch(function (error) {
       errorHandler(res, error);
     });
