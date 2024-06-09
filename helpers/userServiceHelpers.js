@@ -10,3 +10,10 @@ module.exports.isAuthorizedToCreateUser = function(role, auth_role) {
   }
 }
 
+module.exports.isNoExistingUser = async function(body) {
+  const existingUser = await User.findOne({where: {email: body.email}});
+  if (existingUser) {
+    throw new ConflictError('User already exists.');
+  }
+}
+
