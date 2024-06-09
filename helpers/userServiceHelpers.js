@@ -25,3 +25,15 @@ module.exports.hashAndExtractUserFields = async function(body) {
   return userFields;
 }
 
+module.exports.createUser = async function(userFields) {
+  const createdUser = await User.create(userFields);
+
+  const response = {
+    id: createdUser._id,
+    links: {
+      user: `/users/${createdUser._id}`
+    }
+  };
+
+  return response;
+}
