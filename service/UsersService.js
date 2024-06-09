@@ -3,6 +3,7 @@ const { errorCodes } = require('../utils/error.js');
 const { User } = require('../models/user.js');
 const { validateAgainstModel, extractValidFields } = require('../utils/validation.js');
 const bcrypt = require('bcrypt');
+const { ValidationError, PermissionError, ConflictError, ServerError} = require('../utils/error.js');
 
 
 /**
@@ -41,22 +42,18 @@ module.exports.createUser = function(body) {
       await User.deleteMany(); // DELETE IN PRODUCTION
       const {role, auth_role} = body;
 
-      if (typeof(role) != 'string' || typeof(auth_role) != 'string') {
-        return reject(errorCodes[400]);
+      if (typeof(role) != 'string' || typeof(auth_role) != 'string' || !validateAgainstModel(body, User)) {
+        throw new ValidationError('The request body was either not present or did not contain a valid User object.');
       }
 
       if (auth_role != 'admin' && (role == 'instructor' || role == 'admin')) {
-        return reject(errorCodes[403]);
+        throw new PermissionError('The request was not made by an authenticated User satisfying the authorization criteria.');
       }
 
       const existingUser = await User.findOne({where: {email: body.email}});
       
       if (existingUser) {
-        return reject(errorCodes[409]);
-      }
-
-      if (!validateAgainstModel(body, User)) {
-        return reject(errorCodes[400]);
+        throw new ConflictError('User already exists.');
       }
 
       const passwordHash = await bcrypt.hash(body.password, 8);
