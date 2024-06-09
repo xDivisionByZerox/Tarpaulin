@@ -1,9 +1,9 @@
 'use strict';
-const { errorCodes } = require('../utils/error.js');
+const { errorCodes, InternalError } = require('../utils/error.js');
 const { User } = require('../models/user.js');
 const { validateAgainstModel, extractValidFields } = require('../utils/validation.js');
 const bcrypt = require('bcrypt');
-const { ValidationError, PermissionError, ConflictError, ServerError} = require('../utils/error.js');
+const { ValidationError, PermissionError, ConflictError, InternalError, ServerError} = require('../utils/error.js');
 
 
 /**
@@ -68,7 +68,12 @@ module.exports.createUser = function(body) {
       resolve(response);
     } catch (error) {
       console.log(error)
-      reject(errorCodes[500]);
+
+      if (!error instanceof ServerError) {
+        reject(new InternalError('Internal server error.'));
+      }
+
+      reject(error);
     }
   });
 }
