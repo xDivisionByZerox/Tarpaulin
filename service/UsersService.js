@@ -2,7 +2,7 @@
 const { errorCodes } = require('../utils/error.js');
 const { User } = require('../models/user.js');
 const { validateAgainstModel, extractValidFields } = require('../utils/validation.js');
-
+const bcrypt = require('bcrypt');
 
 
 /**
@@ -58,7 +58,12 @@ module.exports.createUser = function(body) {
         return reject(errorCodes[400]);
       }
 
+
       //If passes error checks, create user
+      
+      const passwordHash = await bcrypt.hash(body.password, 8);
+      body.password = passwordHash;
+
       const userFields = extractValidFields(body, User);
       const createdUser = await User.create(userFields);
       const response = {
