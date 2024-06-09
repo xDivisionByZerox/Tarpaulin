@@ -37,12 +37,6 @@ class ConflictError extends ServerError { // 409
     }
 }
 
-class InternalError extends ServerError { // 500
-    constructor(message) {
-        super(message, 500);
-    }
-}
-
 
 module.exports = {
     ServerError,
@@ -51,5 +45,4 @@ module.exports = {
     PermissionError,
     NotFoundError,
     ConflictError,
-    InternalError
 }
