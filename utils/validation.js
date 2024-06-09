@@ -5,12 +5,12 @@ module.exports.validateAgainstModel = function (obj, model) {
         if (obj && model) {
             for (const key in model.schema.paths) {
                 if (model.schema.paths[key].isRequired && !obj[key]) {
-                    throw new ValidationError('Missing required field: ' + key);
+                    return reject(new ValidationError('Missing required field: ' + key));
                 }
             }
             return resolve();
         } else {
-        throw new ValidationError('Object not defined.');
+        return reject(new ValidationError('Object not defined.'));
         }
     });
 }
