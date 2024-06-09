@@ -32,6 +32,17 @@ module.exports.getRedisClient = () => {
 module.exports.rateLimiter = async (req, res, next) => {
     try {
         let tokenBucket = await getTokenBucket(req.ip);
+        if (tokenBucket.tokens >= 1) {
+          tokenBucket.tokens -= 1;
+          await setTokens(tokenBucket);
+          next();
+        } else {
+          await setTokens(tokenBucket);
+          res.status(429).json({
+            error: "Too many requests per minute"
+          });
+
+        }
 
 
     } catch (err) {
@@ -43,6 +54,13 @@ module.exports.rateLimiter = async (req, res, next) => {
 }
 
 async function setTokens(tokenBucket) {
+    await redisClient.hSet(ip, [
+        ['tokens', tokenBucket.tokens],
+        ['last', tokenBucket.last]
+    ]);
+}
+
+async function getTokens(tokenBucket) {
     const timestamp = Date.now();
     const elapsedMilliseconds = timestamp - tokenBucket.last;
 
@@ -67,7 +85,7 @@ async function getTokenBucket(ip) {
           last: parseInt(tokenBucket.last) || Date.now()
         };
     }
-    tokenBucket = await setTokens(tokenBucket);
+    tokenBucket = await getTokens(tokenBucket);
 
     return tokenBucket;
 }
