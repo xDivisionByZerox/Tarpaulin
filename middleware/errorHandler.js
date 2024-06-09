@@ -1,4 +1,6 @@
-function errorHandler(err, req, res, next) {
+const {ValidationError, CredentialsError, PermissionError, NotFoundError, ConflictError} = require('../utils/error.js');
+
+module.exports.errorHandler = function errorHandler(err, res) {
   console.error('Error:', err);
 
   const errorResponse = {
@@ -9,15 +11,24 @@ function errorHandler(err, req, res, next) {
   if (err instanceof ValidationError) {
     errorResponse.code = 400;
     errorResponse.message = err.message;
-  } else if (err instanceof PermissionError) {
+  } 
+  else if (err instanceof CredentialsError) {
+    errorResponse.code = 401;
+    errorResponse.message = err.message;
+  }
+  else if (err instanceof PermissionError) {
     errorResponse.code = 403;
     errorResponse.message = err.message;
-  } else if (err instanceof ConflictError) {
+  }
+  else if (err instanceof NotFoundError) {
+    errorResponse.code = 404;
+    errorResponse.message = err.message;
+  } 
+  else if (err instanceof ConflictError) {
     errorResponse.code = 409;
     errorResponse.message = err.message;
   }
 
-  utils.writeJson(res, errorResponse);
+  res.status(errorResponse.code).json({ error: errorResponse.message });
 }
 
-module.exports.errorHandler = errorHandler;
