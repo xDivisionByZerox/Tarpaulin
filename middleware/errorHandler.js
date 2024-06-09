@@ -1,7 +1,7 @@
 const {ValidationError, CredentialsError, PermissionError, NotFoundError, ConflictError} = require('../utils/error.js');
 
 module.exports.errorHandler = function errorHandler(err, res) {
-  console.error('Error:', err);
+  console.error('Error handler received:\n', err);
 
   const errorResponse = {
     code: 500,
