@@ -6,7 +6,7 @@ const { ServerError, RateLimitError } = require('./error');
 
 let redisClient;
 const rateLimitWindowMilliseconds = 60000;
-const rateLimitWindowMaxRequests = 5;
+const rateLimitWindowMaxRequests = 50;
 
 module.exports.connectToRedis = async () => {
     try{
@@ -34,13 +34,17 @@ module.exports.getRedisClient = () => {
 module.exports.rateLimiter = (req, res, next) => {
     return new Promise(async (resolve, reject) => {
         try {
-            let tokenBucket = await getTokenBucket(req.ip);
-            if (tokenBucket.tokens >= 1) {
+            ip = req.ip;
+            let tokenBucket = await getTokenBucket(ip);
+            console.log(`IP: ${ip} | Tokens: ${tokenBucket.tokens} | Last: ${tokenBucket.last}`);
+
+            if (tokenBucket.tokens > 0) {
               tokenBucket.tokens -= 1;
-              await setTokens(req.ip, tokenBucket);
+              await setTokens(ip, tokenBucket);
               return resolve();
-            } else {
-              await setTokens(req.ip, tokenBucket);
+            } 
+            else {
+              await setTokens(ip, tokenBucket);
               throw new RateLimitError('Rate limit exceeded');
             }
         } catch (err) {
@@ -56,9 +60,9 @@ module.exports.rateLimiter = (req, res, next) => {
 
 async function setTokens(ip, tokenBucket) {
     await redisClient.hSet(ip, [
-        ['tokens', tokenBucket.tokens],
-        ['last', tokenBucket.last]
-    ]);
+          ['tokens', tokenBucket.tokens],
+          ['last', tokenBucket.last]
+    ])
 }
 
 async function getTokens(tokenBucket) {
@@ -67,8 +71,9 @@ async function getTokens(tokenBucket) {
 
     const refreshRate =
       rateLimitWindowMaxRequests / rateLimitWindowMilliseconds;
+    const tokens_added = Math.floor(elapsedMilliseconds * refreshRate)
 
-    tokenBucket.tokens += elapsedMilliseconds * refreshRate;
+    tokenBucket.tokens += tokens_added;
     tokenBucket.tokens =
       Math.min(rateLimitWindowMaxRequests, tokenBucket.tokens);
 
@@ -79,12 +84,12 @@ async function getTokens(tokenBucket) {
 async function getTokenBucket(ip) {
     let tokenBucket = await redisClient.hGetAll(ip);
 
-    if (!tokenBucket || tokenBucket.tokens == "NaN") {
-        tokenBucket = {
-          tokens: rateLimitWindowMaxRequests,
-          last: Date.now()
-        };
+    tokenBucket = {
+      tokens: parseFloat(tokenBucket.tokens) ||
+        rateLimitWindowMaxRequests,
+      last: parseInt(tokenBucket.last) || Date.now()
     }
+
     tokenBucket = await getTokens(tokenBucket);
 
     return tokenBucket;
