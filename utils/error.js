@@ -1,8 +1,8 @@
 class ServerError extends Error {
-    constructor(message, statusCode) {
+    constructor(message, code = 500) {
         super(message);
         this.name = this.constructor.name;
-        this.statusCode = statusCode;
+        this.code = code;
         Error.captureStackTrace(this, this.constructor);
     }
 }
@@ -25,10 +25,31 @@ class PermissionError extends ServerError { // 403
     }
 }
 
+class NotFoundError extends ServerError { // 404
+    constructor(message) {
+        super(message, 404);
+    }
+}
+
+class ConflictError extends ServerError { // 409
+    constructor(message) {
+        super(message, 409);
+    }
+}
+
+class InternalError extends ServerError { // 500
+    constructor(message) {
+        super(message, 500);
+    }
+}
+
 
 module.exports = {
     ServerError,
     ValidationError,
     CredentialsError,
-    PermissionError
+    PermissionError,
+    NotFoundError,
+    ConflictError,
+    InternalError
 }
