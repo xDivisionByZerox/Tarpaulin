@@ -28,19 +28,6 @@ module.exports.getRedisClient = () => {
     return redisClient;
 }
 
-async function getTokenBucket(ip) {
-    let tokenBucket = await redisClient.hGetAll(ip);
-
-    if (!tokenBucket) {
-        tokenBucket = {
-          tokens: parseFloat(tokenBucket.tokens) ||
-            rateLimitWindowMaxRequests,
-          last: parseInt(tokenBucket.last) || Date.now()
-        };
-    }
-
-    return tokenBucket;
-}
 
 module.exports.rateLimiter = async (req, res, next) => {
     try {
@@ -54,3 +41,34 @@ module.exports.rateLimiter = async (req, res, next) => {
         return;
     }
 }
+
+async function setTokens(tokenBucket) {
+    const timestamp = Date.now();
+    const elapsedMilliseconds = timestamp - tokenBucket.last;
+
+    const refreshRate =
+      rateLimitWindowMaxRequests / rateLimitWindowMilliseconds;
+
+    tokenBucket.tokens += elapsedMilliseconds * refreshRate;
+    tokenBucket.tokens =
+      Math.min(rateLimitWindowMaxRequests, tokenBucket.tokens);
+
+    tokenBucket.last = timestamp
+    return tokenBucket;
+}
+
+async function getTokenBucket(ip) {
+    let tokenBucket = await redisClient.hGetAll(ip);
+
+    if (!tokenBucket) {
+        tokenBucket = {
+          tokens: parseFloat(tokenBucket.tokens) ||
+            rateLimitWindowMaxRequests,
+          last: parseInt(tokenBucket.last) || Date.now()
+        };
+    }
+    tokenBucket = await setTokens(tokenBucket);
+
+    return tokenBucket;
+}
+
