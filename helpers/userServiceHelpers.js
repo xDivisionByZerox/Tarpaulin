@@ -4,6 +4,14 @@ const { extractValidFields } = require('../utils/validation.js');
 const bcrypt = require('bcrypt');
 
 
+module.exports.checkIfAuthenticated = async function(body, existingUser) {
+  const authenticated = await bcrypt.compare(body.password, existingUser.password);
+  if (!authenticated) {
+    throw new PermissionError('The specified credentials were invalid.');
+  }
+  return True;
+}
+
 module.exports.checkLoginFields = async function(body) {
   if (!body.email || !body.password) {
     throw new ValidationError('The request body was either not present or did not contain all the required fields.');

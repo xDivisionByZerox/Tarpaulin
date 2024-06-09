@@ -2,7 +2,7 @@
 const { User } = require('../models/user.js');
 const { validateAgainstModel, extractValidFields } = require('../utils/validation.js');
 const { ValidationError, PermissionError, ConflictError, NotFoundError, ServerError} = require('../utils/error.js');
-const { handleUserError, isAuthorizedToCreateUser, checkForExistingUser, hashAndExtractUserFields, createUser, checkLoginFields, getExistingUser } = require('../helpers/userServiceHelpers.js');
+const { handleUserError, isAuthorizedToCreateUser, checkForExistingUser, hashAndExtractUserFields, createUser, checkLoginFields, getExistingUser, checkIfAuthenticated } = require('../helpers/userServiceHelpers.js');
 const bcrypt = require('bcrypt');
 
 
@@ -21,6 +21,8 @@ module.exports.authenticateUser = function(body) {
         checkLoginFields(body),
         getExistingUser(body)
       ]);
+
+      await checkIfAuthenticated(body, existingUser);
 
     } catch (error) {
       return reject(await handleUserError(error));
