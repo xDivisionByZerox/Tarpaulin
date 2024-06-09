@@ -1,9 +1,8 @@
 'use strict';
 const { User } = require('../models/user.js');
 const { validateAgainstModel, extractValidFields } = require('../utils/validation.js');
-const bcrypt = require('bcrypt');
 const { ValidationError, PermissionError, ConflictError, ServerError} = require('../utils/error.js');
-
+const { isAuthorizedToCreateUser, checkForExistingUser, hashAndExtractUserFields, createUser } = require('../helpers/userServiceHelpers.js');
 
 
 
@@ -43,33 +42,18 @@ module.exports.createUser = function(body) {
       await User.deleteMany(); // DELETE IN PRODUCTION
       const {role, auth_role} = body;
 
-      await validateAgainstModel(body, User);
+      await Promise.all([
+        validateAgainstModel(body, User),
+        isAuthorizedToCreateUser(role, auth_role),
+        checkForExistingUser(body)
+      ]);
 
-      if (typeof(role) != 'string' || typeof(auth_role) != 'string') {
-        throw new ValidationError('The request body was either not present or did not contain a valid User object.');
-      }
-
-      if (auth_role != 'admin' && (role == 'instructor' || role == 'admin')) {
-        throw new PermissionError('The request was not made by an authenticated User satisfying the authorization criteria.');
-      }
-
-      const existingUser = await User.findOne({where: {email: body.email}});
-      
-      if (existingUser) {
-        throw new ConflictError('User already exists.');
-      }
-
-      const passwordHash = await bcrypt.hash(body.password, 8);
-      body.password = passwordHash;
-
-      const userFields = extractValidFields(body, User);
-      const createdUser = await User.create(userFields);
-      const response = {
-        id: createdUser._id
-      };
+      const userFields = await hashAndExtractUserFields(body);
+      const response = await createUser(userFields);
 
       return resolve(response);
     } catch (error) {
+      console.log('Error when creating User:', error);
 
       if (!(error instanceof ServerError)) {
         return reject(new ServerError('An error occurred while creating a new User.'));
