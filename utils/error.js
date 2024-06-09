@@ -1,3 +1,12 @@
+class ServerError extends Error {
+    constructor(message, statusCode) {
+        super(message);
+        this.name = this.constructor.name;
+        this.statusCode = statusCode;
+        Error.captureStackTrace(this, this.constructor);
+    }
+}
+
 class ValidationError extends Error { // 400
     constructor(message) {
         super(message);
