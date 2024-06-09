@@ -1,6 +1,6 @@
 const {ValidationError, CredentialsError, PermissionError, NotFoundError, ConflictError} = require('../utils/error.js');
 
-module.exports.errorHandler = function errorHandler(err, res) {
+module.exports.errorHandler = function errorHandler(res, err) {
   console.error('Error handler received:\n', err);
 
   const errorResponse = {
