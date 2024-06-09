@@ -4,6 +4,7 @@ const { validateAgainstModel, extractValidFields } = require('../utils/validatio
 const { ValidationError, PermissionError, ConflictError, NotFoundError, ServerError} = require('../utils/error.js');
 const { handleUserError, isAuthorizedToCreateUser, checkForExistingUser, hashAndExtractUserFields, createUser, checkLoginFields, getExistingUser, checkIfAuthenticated } = require('../helpers/userServiceHelpers.js');
 const bcrypt = require('bcrypt');
+const { generateToken } = require('../utils/auth.js');
 
 
 /**
@@ -23,7 +24,9 @@ module.exports.authenticateUser = function(body) {
       ]);
 
       await checkIfAuthenticated(body, existingUser);
+      const token = await generateToken(existingUser._id);
 
+      return resolve(token);
     } catch (error) {
       return reject(await handleUserError(error));
     }
