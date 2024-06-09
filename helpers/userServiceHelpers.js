@@ -9,7 +9,7 @@ module.exports.checkIfAuthenticated = async function(body, existingUser) {
   if (!authenticated) {
     throw new PermissionError('The specified credentials were invalid.');
   }
-  return True;
+  return true;
 }
 
 module.exports.checkLoginFields = async function(body) {
@@ -61,6 +61,7 @@ module.exports.createUser = async function(userFields) {
 }
 
 module.exports.handleUserError = async function(error) {
+  console.log('handleUserError: ', error);
   if (!(error instanceof ServerError)) {
     return new ServerError('An error occurred while creating a new User.');
   }
