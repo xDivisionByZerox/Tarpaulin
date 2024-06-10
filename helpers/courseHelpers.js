@@ -9,9 +9,9 @@ module.exports.isAuthorizedToCreateCourse = (auth_role) => {
 
 module.exports.checkForExistingCourse = async (body) => {
   const existingCourse = await Course.findOne(body);
-    if (existingCourse) {
-      throw new ConflictError('A course with the specified fields already exists.');
-    }
+  if (existingCourse) {
+    throw new ConflictError('A course with the specified fields already exists.');
+  }
 }
 
 module.exports.createCourse = async (courseFields) => {

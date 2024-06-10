@@ -5,6 +5,7 @@ const { Assignment } = require('../models/assignment.js');
 const { User } = require('../models/user.js');
 const { validateAgainstModel, extractValidFields } = require('../utils/validation.js');
 const { ValidationError, PermissionError, ConflictError, ServerError, NotFoundError} = require('../utils/error.js');
+const { checkForExistingCourse, createCourse } = require('../helpers/courseHelpers.js');
 
 
 
@@ -19,16 +20,13 @@ const { ValidationError, PermissionError, ConflictError, ServerError, NotFoundEr
 exports.createCourse = (body) => {
   return new Promise(async (resolve, reject) => {
     try{
-      const instructorId = await User.findById(body.instructorId, {_id: 1});
-      console.log(instructorId)
+      // const instructorId = await User.findById(body.instructorId, {_id: 1});
+      // body.instructorId = instructorId;
+      await checkForExistingCourse(body);
       const courseFields = extractValidFields(body, Course);
-      console.log(courseFields)
-      const createdCourse = await Course.create(courseFields);
-      const response = {
-        id: createdCourse._id
-      };
+      const response = await createCourse(courseFields);
 
-      resolve(response);
+      return resolve(response);
 
     }
     catch (error) {
