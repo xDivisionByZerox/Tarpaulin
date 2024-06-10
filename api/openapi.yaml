@@ -810,7 +810,7 @@ components:
           items:
             type: string
           description: >
-            The courses a user is enrolled in/teaches
+            The ids of courses a user is enrolled in/teaches
             
     Course:
       description: >
