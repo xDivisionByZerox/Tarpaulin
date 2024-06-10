@@ -34,7 +34,7 @@ const CourseSchema = new mongoose.Schema({
         type: [mongoose.Schema.Types.ObjectId],
         ref: 'User',
         default: [],
-        required: true
+        required: false
     }
 })
 const Course = mongoose.model('Course', CourseSchema)
