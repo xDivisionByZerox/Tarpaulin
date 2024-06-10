@@ -37,7 +37,7 @@ function requireAuth(req, res, next) {
     });
 }
 
-function checkPermissions(req, res, next, body) {
+function checkPermissions(req, res, next) {
     // Checks if a user has the proper user permissions 
     // If so, resolves as normal. Else, it sends back their authorization as student.
     return new Promise((resolve, reject) => {

@@ -11,7 +11,7 @@ const { isAdmin } = require('../helpers/courseHelpers.js');
 module.exports.createCourse = function createCourse (req, res, next, body) {
   rateLimiter(req, res, next)
     .then(() => requireAuth(req, res, next))
-    .then(() => checkPermissions(req, res, next, 'admin'))
+    .then(() => checkPermissions(req, res, next))
     .then(() => isAdmin(req.auth_role))
     .then(() => Courses.createCourse(body))
     .then((response) => {
@@ -73,12 +73,16 @@ module.exports.getStudentsByCourseId = function getStudentsByCourseId (req, res,
 };
 
 module.exports.removeCourseById = function removeCourseById (req, res, next, id) {
-  Courses.removeCourseById(id)
-    .then(function (response) {
+  rateLimiter(req, res, next)
+    .then(() => requireAuth(req, res, next))
+    .then(() => checkPermissions(req, res, next))
+    .then(() => isAdmin(req.auth_role))
+    .then(() => Courses.removeCourseById(id))
+    .then((response) => {
       utils.writeJson(res, response);
     })
-    .catch(function (response) {
-      utils.writeJson(res, response);
+    .catch((error) => {
+      errorHandler(res, error);
     });
 };
 

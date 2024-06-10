@@ -24,7 +24,7 @@ module.exports.authenticateUser = function authenticateUser (req, res, next, bod
 
 module.exports.createUser = function createUser(req, res, next, body) {
   rateLimiter(req, res, next)
-    .then(() => checkPermissions(req, res, next, body))
+    .then(() => checkPermissions(req, res, next))
     .then(() => {
       isAuthorizedToCreateUser(body.role, req.auth_role)
     })
@@ -47,7 +47,7 @@ module.exports.getUserById = function getUserById (req, res, next, id) {
   // Gets a user by their id if their jwt id matches the id
   rateLimiter(req, res, next)
     .then(() => requireAuth(req, res, next))
-    .then(() => checkPermissions(req, res, next, id))
+    .then(() => checkPermissions(req, res, next))
     .then(() => Users.getUserById(id))
     .then((response) => {
       utils.writeJson(res, response);
