@@ -1,10 +1,11 @@
 'use strict';
 
-const { errorCodes } = require('../utils/error.js');
 const { Course } = require('../models/course.js');
 const { Assignment } = require('../models/assignment.js');
 const { User } = require('../models/user.js');
 const { validateAgainstModel, extractValidFields } = require('../utils/validation.js');
+const { ValidationError, PermissionError, ConflictError, ServerError, NotFoundError} = require('../utils/error.js');
+
 
 
 /**
@@ -16,9 +17,8 @@ const { validateAgainstModel, extractValidFields } = require('../utils/validatio
  **/
 
 exports.createCourse = (body) => {
-
   //untested
-  return new Promise((resolve, reject) => {
+  return new Promise(async (resolve, reject) => {
     try{
       const {role, auth_role} = body;
 
@@ -41,7 +41,10 @@ exports.createCourse = (body) => {
     }
     catch (error) {
       console.log(error)
-      reject(errorCodes[500]);
+      if (!(error instanceof ServerError)) {
+        return reject(new ServerError('An error occurred while creating a new User.'));
+      }
+      return reject(error);
     }
     //commented out example endpoint. Requires removing of try/catch
 //     var examples = {};
@@ -132,7 +135,10 @@ exports.getAssignmentsByCourseId = (id) => {
     }
     catch (error) {
       console.log(error)
-      reject(errorCodes[500]);
+      if (!(error instanceof ServerError)) {
+        return reject(new ServerError('An error occurred while creating a new User.'));
+      }
+      return reject(error);
     }
 
 // Keeping around just in case
@@ -168,7 +174,7 @@ exports.getAssignmentsByCourseId = (id) => {
  **/
 
 exports.getCourseById = (id) => {
-  return new Promise((resolve, reject) => {
+  return new Promise(async (resolve, reject) => {
     //Untested
     try{
       const courseExist = await Course.countDocuments({id: id }).count().exec(); //ensure id exists
@@ -190,7 +196,10 @@ exports.getCourseById = (id) => {
     }
     catch (error){
       console.log(error)
-      reject(errorCodes[500]);
+      if (!(error instanceof ServerError)) {
+        return reject(new ServerError('An error occurred while creating a new User.'));
+      }
+      return reject(error);
     }
 
     //prior example code, keeping around until tested
@@ -220,7 +229,7 @@ exports.getCourseById = (id) => {
  **/
 
 exports.getRosterByCourseId = (id) => {
-  return new Promise((resolve, reject) => {
+  return new Promise(async (resolve, reject) => {
     //Unfinished
     try{
       const courseExist = await Course.countDocuments({id: id }).count().exec(); //ensure id exists
@@ -234,8 +243,10 @@ exports.getRosterByCourseId = (id) => {
     }
     catch (error) {
       console.log(error)
-      reject(errorCodes[500]);
-
+      if (!(error instanceof ServerError)) {
+        return reject(new ServerError('An error occurred while creating a new User.'));
+      }
+      return reject(error);
     }
     //example kept for testing purposes
     // var examples = {};
@@ -258,7 +269,7 @@ exports.getRosterByCourseId = (id) => {
  **/
 
 exports.getStudentsByCourseId = (id) => {
-  return new Promise((resolve, reject) => {
+  return new Promise(async (resolve, reject) => {
     //Unfinished
     try{
       const courseExist = await Course.countDocuments({id: id }).count().exec(); //ensure id exists
@@ -275,8 +286,10 @@ exports.getStudentsByCourseId = (id) => {
     }
     catch (error) {
       console.log(error)
-      reject(errorCodes[500]);
-
+      if (!(error instanceof ServerError)) {
+        return reject(new ServerError('An error occurred while creating a new User.'));
+      }
+      return reject(error);
     }
     //keeping for testing purposes
 //     var examples = {};
@@ -311,7 +324,7 @@ exports.getStudentsByCourseId = (id) => {
  **/
 
 exports.removeCourseById = (id) => {
-  return new Promise((resolve, reject) => {
+  return new Promise(async (resolve, reject) => {
     //Untested
     try{
       const courseExist = await Course.countDocuments({_id: id }).count().exec(); //ensure id exists
@@ -322,7 +335,10 @@ exports.removeCourseById = (id) => {
     }
     catch (error){
       console.log(error)
-      reject(errorCodes[500]);
+      if (!(error instanceof ServerError)) {
+        return reject(new ServerError('An error occurred while creating a new User.'));
+      }
+      return reject(error);
     }
 
   });
@@ -340,7 +356,7 @@ exports.removeCourseById = (id) => {
  **/
 
 exports.updateCourseById = (body,id) => {
-  return new Promise((resolve, reject) => {
+  return new Promise(async (resolve, reject) => {
     //Untested
     try{
       const {role, auth_role} = body;
@@ -366,6 +382,9 @@ exports.updateCourseById = (body,id) => {
     }
     catch (error) {
       console.log(error)
+      if (!(error instanceof ServerError)) {
+        return reject(new ServerError('An error occurred while creating a new User.'));
+      }
       reject(errorCodes[500]);
     }
 
@@ -406,9 +425,11 @@ exports.updateEnrollmentByCourseId = (body,id) => {
     }
     catch (error) {
       console.log(error)
+      if (!(error instanceof ServerError)) {
+        return reject(new ServerError('An error occurred while creating a new User.'));
+      }
       reject(errorCodes[500]);
     }
-
   });
 }
 
