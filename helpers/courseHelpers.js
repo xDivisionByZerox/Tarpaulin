@@ -46,6 +46,21 @@ module.exports.generatePaginatedCourseLinks = (pageNumber, lastPage) => {
   return links;
 }
 
+module.exports.mapCourses = (courses) => {
+  return courses.map((course) => {
+    return {
+      id: course._id,
+      title: course.title,
+      subject: course.subject,
+      number: course.number,
+      term: course.term,
+      instructorId: course.instructorId,
+      links: {
+        self: `/courses/${course._id}`
+      }
+    };
+  });
+}
 
 module.exports.calculatePagination = (page, numPerPage, totalItems) => {
   const coursePage = parseInt(page) || 1;
