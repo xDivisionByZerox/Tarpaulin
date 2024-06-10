@@ -4,6 +4,7 @@ services:
   api:
     depends_on:
     - admin #checks for mongo database container being started
+    - redis
     build: . #building this vs using the mongo docker
     environment:
       # MONGO_PASSWORD: ${MONGO_PASSWORD} #need to add base user onto mongodb initdb below
@@ -24,10 +25,13 @@ services:
     ports:
       - 27017:27017 #map external port calls to internal port. ensures "going where we expect"
 
-  # redis:
-  #   image: latest
-  #   ports:
-  #     - 6736:6736
+  redis:
+    image: redis:latest
+    restart: always
+    ports:
+      - ${REDIS_PORT}:${REDIS_PORT}
+    # Enviroment:
+
 
   # initdb:
   #   depends_on:
