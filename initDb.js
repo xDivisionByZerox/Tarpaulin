@@ -23,6 +23,7 @@ const { Course } = require('./models/course.js');
 const { Assignment } = require('./models/assignment.js');
 const { Submission } = require('./models/submission.js');
 const { Error } = require('./models/error.js');
+const bcrypt = require('bcrypt');
 const faker = require('faker');
 
 const mongoHost = process.env.MONGO_HOST || 'localhost';
@@ -35,8 +36,10 @@ const mongoCreateUser = process.env.MONGO_CREATE_USER;
 const mongoCreatePassword = process.env.MONGO_CREATE_PASSWORD;
 
 // const mongoUrl = `mongodb://${mongoUser}:${mongoPassword}@${mongoHost}:${mongoPort}/${mongoAuthDbName}?authSource=${mongoDbName}`;
+
 const mongoUrl = `mongodb://${mongoUser}:${mongoPassword}@${mongoHost}:${mongoPort}/${mongoAuthDbName}`;
 // const mongoUrl = `mongodb://${mongoHost}/${mongoDbName}`;
+
 
 const options = {
   useNewUrlParser: true,
@@ -48,18 +51,24 @@ mongoose.connect(mongoUrl, options).then(async () => {
 
   try {
     await User.deleteMany({});
-    const insertedUsers = await User.insertMany(require('./data/users.json'));
+    await Course.deleteMany({});
+    await Assignment.deleteMany({});
+    const users = require('./data/users.json');
+    users.forEach(user => {
+      user.password = bcrypt.hashSync(user.password, 8);
+    })
+    const insertedUsers = await User.insertMany(users);
     console.log("== Inserted Users:", insertedUsers.map(b => b._id));
 
     // Create a new, lower-privileged database user if the correct environment variables were specified
-    if (mongoCreateUser && mongoCreatePassword) {
-      await createMongoUser(mongoCreateUser, mongoCreatePassword);
-    }
-    await Course.deleteMany({});
-    await Assignment.deleteMany({});
-
-    await generateCourses();
-    await generateAssignments();
+    // if (mongoCreateUser && mongoCreatePassword) {
+    //   await createMongoUser(mongoCreateUser, mongoCreatePassword);
+    // }
+    // await Course.deleteMany({});
+    // await Assignment.deleteMany({});
+    //
+    // await generateCourses();
+    // await generateAssignments();
 
   } catch (error) {
     console.error("Error during database operations:", error);

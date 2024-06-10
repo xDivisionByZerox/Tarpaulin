@@ -47,15 +47,13 @@ module.exports.authenticateUser = (body) => {
  * body User A User object.
  * returns inline_response_201
  **/
-module.exports.createUser = (body, auth_role) => {
+module.exports.createUser = (body) => {
   return new Promise(async (resolve, reject) => {
     try {
-      await User.deleteMany(); // DELETE IN PRODUCTION
-      const {role} = body;
+      // await User.deleteMany(); // DELETE IN PRODUCTION
 
       await Promise.all([
         validateAgainstModel(body, User),
-        isAuthorizedToCreateUser(role, auth_role),
         checkForExistingUser(body)
       ]);
 

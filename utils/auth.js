@@ -4,7 +4,7 @@
 const jwt = require('jsonwebtoken')
 require('dotenv').config();
 const { User } = require('../models/user');
-const { PermissionError } = require('./error');
+const { PermissionError, NotFoundError } = require('./error');
 const secret_key = process.env.JWT_SECRET
 
 function generateToken(user_id) {
@@ -37,7 +37,7 @@ function requireAuth(req, res, next) {
     });
 }
 
-function checkPermissions(req, res, next, body) {
+function checkPermissions(req, res, next) {
     // Checks if a user has the proper user permissions 
     // If so, resolves as normal. Else, it sends back their authorization as student.
     return new Promise((resolve, reject) => {
@@ -53,20 +53,16 @@ function checkPermissions(req, res, next, body) {
             const payload = jwt.verify(token, secret_key);
             const userId = payload.user_id;
 
-            User.findByPk(userId, { attributes: ['role'] })
-                .then(user => {
+            User.findOne({_id: userId})
+                .then((user) => {
                     if (!user) {
-                        throw new Error('User not found: ' + userId);
+                        return reject(new NotFoundError('User not found: ' + userId));
                     }
                     req.auth_role = user.role;
                     return resolve();
                 })
-                .catch(error => {
-                    console.error('Error finding user: ', error);
-                    req.auth_role = 'student';
-                    return resolve();
-                });
         } catch (error) {
+            console.error('Error with token: ', error);
             req.auth_role = 'student';
             return resolve();
         }

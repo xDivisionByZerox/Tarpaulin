@@ -5,6 +5,7 @@ const { Assignment } = require('../models/assignment.js');
 const { User } = require('../models/user.js');
 const { validateAgainstModel, extractValidFields } = require('../utils/validation.js');
 const { ValidationError, PermissionError, ConflictError, ServerError, NotFoundError} = require('../utils/error.js');
+const { checkForExistingCourse, createCourse, handleCourseError } = require('../helpers/courseHelpers.js');
 
 
 
@@ -17,45 +18,18 @@ const { ValidationError, PermissionError, ConflictError, ServerError, NotFoundEr
  **/
 
 exports.createCourse = (body) => {
-  //untested
   return new Promise(async (resolve, reject) => {
     try{
-      const {role, auth_role} = body;
-
-      if (typeof(role) != 'string' || typeof(auth_role) != 'string') {
-        throw new ValidationError('The request body was either not present or did not contain a valid User object.');
-      }
-
-      if (auth_role != 'admin' && role == 'admin') { //difference between role and auth_role?
-        throw new PermissionError('The request was not authorized.');
-      }
-
+      await validateAgainstModel(body, Course);
+      await checkForExistingCourse(body);
       const courseFields = extractValidFields(body, Course);
-      const createdCourse = await Course.create(courseFields);
-      const response = {
-        id: createdCourse._id
-      };
+      const response = await createCourse(courseFields);
 
-      resolve(response);
-
+      return resolve(response);
     }
     catch (error) {
-      console.log(error)
-      if (!(error instanceof ServerError)) {
-        return reject(new ServerError('An error occurred while creating a new User.'));
-      }
-      return reject(error);
+      return reject(await handleCourseError(error));
     }
-    //commented out example endpoint. Requires removing of try/catch
-//     var examples = {};
-//     examples['application/json'] = {
-//   "id" : "123"
-// };
-//     if (Object.keys(examples).length > 0) {
-//       resolve(examples[Object.keys(examples)[0]]);
-//     } else {
-//       resolve();
-//     }
   });
 }
 
@@ -120,27 +94,6 @@ exports.getAllCourses = (page,subject,number,term) => {
   
     }
 
-//     var examples = {};
-//     examples['application/json'] = {
-//   "courses" : [ {
-//     "number" : "493",
-//     "subject" : "CS",
-//     "term" : "sp22",
-//     "title" : "Cloud Application Development",
-//     "instructorId" : "123"
-//   }, {
-//     "number" : "493",
-//     "subject" : "CS",
-//     "term" : "sp22",
-//     "title" : "Cloud Application Development",
-//     "instructorId" : "123"
-//   } ]
-// };
-//     if (Object.keys(examples).length > 0) {
-//       resolve(examples[Object.keys(examples)[0]]);
-//     } else {
-//       resolve();
-//     }
   });
 }
 
@@ -372,20 +325,17 @@ exports.removeCourseById = (id) => {
   return new Promise(async (resolve, reject) => {
     //Untested
     try{
-      const courseExist = await Course.countDocuments({_id: id }).count().exec(); //ensure id exists
+      const courseExist = await Course.countDocuments({ _id: id });
+
       if (courseExist != 1){
         throw new NotFoundError('Course not found.');
       }
-      await Course.deleteOne(id);
+      await Course.deleteOne({ _id: id });
+      return resolve({'message': 'Course deleted successfully.'});
     }
     catch (error){
-      console.log(error)
-      if (!(error instanceof ServerError)) {
-        return reject(new ServerError('An error occurred while creating a new User.'));
-      }
-      return reject(error);
+      return reject(await handleCourseError(error));
     }
-
   });
 }
 
