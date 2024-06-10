@@ -24,7 +24,7 @@ module.exports.authenticateUser = function authenticateUser (req, res, next, bod
 module.exports.createUser = function createUser(req, res, next, body) {
   rateLimiter(req, res, next)
     .then(() => checkPermissions(req, res, next, body))
-    .then(() => Users.createUser(body))
+    .then(() => Users.createUser(body, req.auth_role))
     .then((response) => {
       utils.writeJson(res, response);
     })
@@ -35,12 +35,20 @@ module.exports.createUser = function createUser(req, res, next, body) {
 
 
 module.exports.getUserById = function getUserById (req, res, next, id) {
+  // Instructors and students have differnt response to this endpoint
+  // Checkpermissions AND check if user is the same as the id
+  // WHICH FIRST?
+  // check if user is the same as the id then check permissions then Users.getUserById(id)
+  // ID can be gotten from JWT
   // Gets a user by their id if their jwt id matches the id
-  Users.getUserById(id)
-    .then(function (response) {
+  rateLimiter(req, res, next)
+    .then(() => requireAuth(req, res, next, id))
+    .then(() => checkPermissions(req, res, next, id))
+    .then(() => Users.getUserById(id))
+    .then((response) => {
       utils.writeJson(res, response);
     })
-    .catch(function (response) {
-      utils.writeJson(res, response);
+    .catch((error) => {
+      errorHandler(res, error);
     });
 };
