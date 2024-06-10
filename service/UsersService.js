@@ -50,7 +50,7 @@ module.exports.authenticateUser = (body) => {
 module.exports.createUser = (body) => {
   return new Promise(async (resolve, reject) => {
     try {
-      await User.deleteMany(); // DELETE IN PRODUCTION
+      // await User.deleteMany(); // DELETE IN PRODUCTION
 
       await Promise.all([
         validateAgainstModel(body, User),
