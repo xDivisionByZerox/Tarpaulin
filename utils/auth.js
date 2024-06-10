@@ -4,7 +4,7 @@
 const jwt = require('jsonwebtoken')
 require('dotenv').config();
 const { User } = require('../models/user');
-const { PermissionError } = require('./error');
+const { PermissionError, NotFoundError } = require('./error');
 const secret_key = process.env.JWT_SECRET
 
 function generateToken(user_id) {
@@ -56,7 +56,7 @@ function checkPermissions(req, res, next) {
             User.findOne({_id: userId})
                 .then((user) => {
                     if (!user) {
-                        throw new Error('User not found: ' + userId);
+                        return reject(new NotFoundError('User not found: ' + userId));
                     }
                     req.auth_role = user.role;
                     return resolve();
