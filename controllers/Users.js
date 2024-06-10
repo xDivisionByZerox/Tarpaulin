@@ -5,6 +5,7 @@ var Users = require('../service/UsersService');
 const { requireAuth, checkPermissions } = require('../utils/auth.js');
 const { errorHandler }= require('../middleware/errorHandler');
 const { rateLimiter } = require('../utils/ratelimiter.js');
+const { isAuthorizedToCreateUser } = require('../helpers/userServiceHelpers.js');
 
 
 // Controllers call coresponding services, then passes response to Json writer to create response
@@ -24,7 +25,10 @@ module.exports.authenticateUser = function authenticateUser (req, res, next, bod
 module.exports.createUser = function createUser(req, res, next, body) {
   rateLimiter(req, res, next)
     .then(() => checkPermissions(req, res, next, body))
-    .then(() => Users.createUser(body, req.auth_role))
+    .then(() => {
+      isAuthorizedToCreateUser(body.role, req.auth_role)
+    })
+    .then(() => Users.createUser(body))
     .then((response) => {
       utils.writeJson(res, response);
     })
