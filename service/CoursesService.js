@@ -16,20 +16,13 @@ const { ValidationError, PermissionError, ConflictError, ServerError, NotFoundEr
  * returns inline_response_201_1
  **/
 
-exports.createCourse = (body, auth_role) => {
+exports.createCourse = (body) => {
   return new Promise(async (resolve, reject) => {
     try{
-      const {role, auth_role} = body;
-
-      if (typeof(role) != 'string' || typeof(auth_role) != 'string') {
-        throw new ValidationError('The request body was either not present or did not contain a valid User object.');
-      }
-
-      if (auth_role != 'admin' && role == 'admin') { //difference between role and auth_role?
-        throw new PermissionError('The request was not authorized.');
-      }
-
+      const instructorId = await User.findById(body.instructorId, {_id: 1});
+      console.log(instructorId)
       const courseFields = extractValidFields(body, Course);
+      console.log(courseFields)
       const createdCourse = await Course.create(courseFields);
       const response = {
         id: createdCourse._id
@@ -41,7 +34,7 @@ exports.createCourse = (body, auth_role) => {
     catch (error) {
       console.log(error)
       if (!(error instanceof ServerError)) {
-        return reject(new ServerError('An error occurred while creating a new User.'));
+        return reject(new ServerError('An error occurred while creating a new Course.'));
       }
       return reject(error);
     }

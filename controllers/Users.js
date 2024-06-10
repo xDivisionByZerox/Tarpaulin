@@ -46,7 +46,7 @@ module.exports.getUserById = function getUserById (req, res, next, id) {
   // ID can be gotten from JWT
   // Gets a user by their id if their jwt id matches the id
   rateLimiter(req, res, next)
-    .then(() => requireAuth(req, res, next, id))
+    .then(() => requireAuth(req, res, next))
     .then(() => checkPermissions(req, res, next, id))
     .then(() => Users.getUserById(id))
     .then((response) => {
