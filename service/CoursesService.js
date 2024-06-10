@@ -16,8 +16,7 @@ const { ValidationError, PermissionError, ConflictError, ServerError, NotFoundEr
  * returns inline_response_201_1
  **/
 
-exports.createCourse = (body) => {
-  //untested
+exports.createCourse = (body, auth_role) => {
   return new Promise(async (resolve, reject) => {
     try{
       const {role, auth_role} = body;
