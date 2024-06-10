@@ -12,15 +12,13 @@ const mongoAuthDbName = process.env.MONGO_AUTH_DB_NAME || mongoDbName
 // Connection URI
 let mongoUrl;
 if (mongoHost == 'localhost') {
-    console.log(mongoHost)
-    // console.log("HITTING LOCALHOST")
-   mongoUrl = `mongodb://${mongoHost}/${mongoDbName}`;
+  console.log("HITTING LOCALHOST");
+  mongoUrl = `mongodb://${mongoHost}/${mongoDbName}`;
 } else{
-  // console.log("HITTING ELSE")
+  console.log("HITTING ELSE");
   mongoUrl = `mongodb://${mongoUser}:${mongoPassword}@${mongoHost}:${mongoPort}/${mongoAuthDbName}?authSource=${mongoDbName}`;
 }
-// const mongoUrl = `mongodb://${mongoHost}:${mongoPort}/${mongoDbName}`;
-// console.log(mongoUrl)
+console.log(mongoUrl)
 
 
 // Database connection
