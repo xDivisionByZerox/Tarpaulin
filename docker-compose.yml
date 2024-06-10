@@ -1,16 +1,16 @@
-version: '3'
+# version: '3'
 
 services:
   api:
     depends_on:
-    - database #checks for mongo database container being started
+    - tarpaulin #checks for mongo database container being started
     build: . #building this vs using the mongo docker
     environment:
-      MONGO_PASSWORD: ${MONGO_PASSWORD}
+      MONGO_PASSWORD: ${MONGO_PASSWORD} #need to add base user onto mongodb initdb below
       MONGO_USER: ${MONGO_USER}
       MONGO_ROOT_USER: ${MONGO_ROOT_USER}
       MONGO_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD}
-      DATABASE_HOST: "tarpaulin" #
+      MONGO_HOST: "tarpaulin" #
       MONGO_DB_NAME: ${MONGO_DB_NAME}
     ports:
       - 8000:8000
