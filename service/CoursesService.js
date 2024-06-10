@@ -45,24 +45,21 @@ exports.createCourse = (body) => {
  * returns inline_response_200_1
  **/
 
-exports.getAllCourses = (page,subject,number,term) => {
+exports.getAllCourses = (page, subject, number, term) => {
   //unfinished
   return new Promise(async (resolve, reject) => {
-    try{
+    try {
       let coursePage = parseInt(page) || 1;
       const numPerPage = 10;
-      lengthOfCourses = await Course.countDocuments({}).count().exec()
+      const lengthOfCourses = await Course.countDocuments({});
+
       const lastPage = Math.ceil(lengthOfCourses / numPerPage);
-      coursePage = coursePage > lastPage ? lastPage : coursePage;
-      coursePage = coursePage < 1 ? 1 : coursePage;
-    
-      /*
-       * Calculate starting and ending indices of courses on requested page and
-       * slice out the corresponsing sub-array of courses.
-       */
-      const start = (coursePage - 1) * numPerPage;
-      const end = start + numPerPage;
-      const pageBusinesses = Business.slice(start, end); //???
+      coursePage = Math.min(Math.max(coursePage, 1), lastPage);
+      const skip = (coursePage - 1) * numPerPage;
+
+      const pageCourses = await Course.find({})
+        .skip(skip)
+        .limit(numPerPage);
     
       /*
        * Generate HATEOAS links for surrounding pages.
@@ -81,7 +78,16 @@ exports.getAllCourses = (page,subject,number,term) => {
        * Construct and send response.
        */
       const response = {
-        course: pageBusinesses,
+        course: pageCourses.map(course => {
+          return {
+            id: course._id,
+            subject: course.subject,
+            number: course.number,
+            title: course.title,
+            term: course.term,
+            instructorId: course.instructorId
+          }
+        }),
         pageNumber: coursePage,
         totalPages: lastPage,
         pageSize: numPerPage,
