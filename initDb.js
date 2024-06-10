@@ -35,8 +35,8 @@ const mongoAuthDbName = process.env.MONGO_AUTH_DB_NAME;
 const mongoCreateUser = process.env.MONGO_CREATE_USER;
 const mongoCreatePassword = process.env.MONGO_CREATE_PASSWORD;
 
-const mongoUrl = `mongodb://${mongoUser}:${mongoPassword}@${mongoHost}:${mongoPort}/${mongoAuthDbName}?authSource=${mongoDbName}`;
-// const mongoUrl = `mongodb://${mongoHost}/${mongoDbName}`;
+// const mongoUrl = `mongodb://${mongoUser}:${mongoPassword}@${mongoHost}:${mongoPort}/${mongoAuthDbName}?authSource=${mongoDbName}`;
+const mongoUrl = `mongodb://${mongoHost}/${mongoDbName}`;
 
 const options = {
   useNewUrlParser: true,
@@ -48,6 +48,8 @@ mongoose.connect(mongoUrl, options).then(async () => {
 
   try {
     await User.deleteMany({});
+    await Course.deleteMany({});
+    await Assignment.deleteMany({});
     const users = require('./data/users.json');
     users.forEach(user => {
       user.password = bcrypt.hashSync(user.password, 8);
