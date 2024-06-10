@@ -53,20 +53,16 @@ function checkPermissions(req, res, next, body) {
             const payload = jwt.verify(token, secret_key);
             const userId = payload.user_id;
 
-            User.findByPk(userId, { attributes: ['role'] })
-                .then(user => {
+            User.findOne({_id: userId})
+                .then((user) => {
                     if (!user) {
                         throw new Error('User not found: ' + userId);
                     }
                     req.auth_role = user.role;
                     return resolve();
                 })
-                .catch(error => {
-                    console.error('Error finding user: ', error);
-                    req.auth_role = 'student';
-                    return resolve();
-                });
         } catch (error) {
+            console.error('Error with token: ', error);
             req.auth_role = 'student';
             return resolve();
         }
