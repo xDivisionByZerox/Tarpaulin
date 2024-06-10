@@ -5,14 +5,14 @@ var Courses = require('../service/CoursesService');
 const { requireAuth, checkPermissions } = require('../utils/auth.js');
 const { errorHandler }= require('../middleware/errorHandler');
 const { rateLimiter } = require('../utils/ratelimiter.js');
-const { isAuthorizedToCreateCourse } = require('../helpers/courseHelpers.js');
+const { isAdmin } = require('../helpers/courseHelpers.js');
 // Controllers call coresponding services, then passes response to Json writer to create response
 
 module.exports.createCourse = function createCourse (req, res, next, body) {
   rateLimiter(req, res, next)
     .then(() => requireAuth(req, res, next))
     .then(() => checkPermissions(req, res, next, 'admin'))
-    .then(() => isAuthorizedToCreateCourse(req.auth_role))
+    .then(() => isAdmin(req.auth_role))
     .then(() => Courses.createCourse(body))
     .then((response) => {
       utils.writeJson(res, response);

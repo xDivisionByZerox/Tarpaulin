@@ -1,7 +1,7 @@
 const { PermissionError, ConflictError, ServerError } = require('../utils/error.js');
 const { Course } = require('../models/course.js');
 
-module.exports.isAuthorizedToCreateCourse = (auth_role) => {
+module.exports.isAdmin = (auth_role) => {
   if (auth_role != 'admin') {
     throw new PermissionError('The request was not made by an authenticated User satisfying the authorization criteria.');
   }
