@@ -1,5 +1,5 @@
-
 const { PermissionError, ConflictError } = require('../utils/error.js');
+const { Course } = require('../models/course.js');
 
 module.exports.isAuthorizedToCreateCourse = (auth_role) => {
   if (auth_role != 'admin') {
@@ -10,6 +10,7 @@ module.exports.isAuthorizedToCreateCourse = (auth_role) => {
 module.exports.checkForExistingCourse = async (body) => {
   const existingCourse = await Course.findOne(body);
   if (existingCourse) {
+    console.log('Course already exists.');
     throw new ConflictError('A course with the specified fields already exists.');
   }
 }

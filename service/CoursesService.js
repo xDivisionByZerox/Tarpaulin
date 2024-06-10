@@ -20,8 +20,6 @@ const { checkForExistingCourse, createCourse } = require('../helpers/courseHelpe
 exports.createCourse = (body) => {
   return new Promise(async (resolve, reject) => {
     try{
-      // const instructorId = await User.findById(body.instructorId, {_id: 1});
-      // body.instructorId = instructorId;
       await checkForExistingCourse(body);
       const courseFields = extractValidFields(body, Course);
       const response = await createCourse(courseFields);
