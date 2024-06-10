@@ -1,8 +1,9 @@
 'use strict';
 const { User } = require('../models/user.js');
 const { validateAgainstModel, extractValidFields } = require('../utils/validation.js');
-const { handleUserError, isAuthorizedToCreateUser, checkForExistingUser, hashAndExtractUserFields, createUser, checkLoginFields, getExistingUser, checkIfAuthenticated } = require('../helpers/userServiceHelpers.js');
+const { handleUserError, isAuthorizedToCreateUser, checkForExistingUser, hashAndExtractUserFields, createUser, checkLoginFields, getExistingUser, checkIfAuthenticated, getUserCourses } = require('../helpers/userServiceHelpers.js');
 const { generateToken } = require('../utils/auth.js');
+const { NotFoundError } = require('../utils/error.js');
 
 
 /**
@@ -22,7 +23,16 @@ module.exports.authenticateUser = (body) => {
       await checkIfAuthenticated(body, existingUser);
       const token = await generateToken(existingUser._id);
 
-      return resolve(token);
+      const response = {
+        id: existingUser._id,
+        token: token,
+        message: 'Successfully authenticated user.',
+        links: {
+          user: `/users/${existingUser._id}`
+        }
+      }
+
+      return resolve(response);
     } catch (error) {
       return reject(await handleUserError(error));
     }
@@ -40,12 +50,10 @@ module.exports.authenticateUser = (body) => {
 module.exports.createUser = (body) => {
   return new Promise(async (resolve, reject) => {
     try {
-      await User.deleteMany(); // DELETE IN PRODUCTION
-      const {role, auth_role} = body;
+      // await User.deleteMany(); // DELETE IN PRODUCTION
 
       await Promise.all([
         validateAgainstModel(body, User),
-        isAuthorizedToCreateUser(role, auth_role),
         checkForExistingUser(body)
       ]);
 
@@ -68,18 +76,24 @@ module.exports.createUser = (body) => {
  * returns User
  **/
 module.exports.getUserById = (id) => {
-  return new Promise((resolve, reject) => {
-    var examples = {};
-    examples['application/json'] = {
-  "password" : "hunter2",
-  "role" : "student",
-  "name" : "Jane Doe",
-  "email" : "doej@oregonstate.edu"
-};
-    if (Object.keys(examples).length > 0) {
-      resolve(examples[Object.keys(examples)[0]]);
-    } else {
-      resolve();
+  return new Promise(async (resolve, reject) => {
+    try {
+      const courses = await getUserCourses(id)
+
+      const response = {
+        id: id,
+        courses: courses,
+        links: {
+          user: `/users/${id}`,
+          courses: [
+            courses.map(course => `/courses/${course.id}`)
+          ]
+        }
+      }
+
+      return resolve(response);
+    } catch (error) {
+      return reject(await handleUserError(error));
     }
   });
 }

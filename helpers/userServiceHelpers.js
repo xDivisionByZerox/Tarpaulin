@@ -3,6 +3,25 @@ const { User } = require('../models/user.js');
 const { extractValidFields } = require('../utils/validation.js');
 const bcrypt = require('bcrypt');
 
+module.exports.getUserCourses = async (id) => {
+  const existingUser = await User.findById(id);
+
+  if (!existingUser) {
+    throw new NotFoundError('User not found.');
+  }
+
+  if (id != existingUser._id) {
+    throw new PermissionError('The request was not made by an authenticated User satisfying the authorization criteria.');
+  }
+
+  const courses = existingUser.courses;
+
+  if (!courses || courses.length == 0) {
+    throw new NotFoundError('Specified user has no courses.');
+  }
+  return courses;
+}
+
 
 module.exports.checkIfAuthenticated = async (body, existingUser) => {
   const authenticated = await bcrypt.compare(body.password, existingUser.password);
@@ -18,9 +37,12 @@ module.exports.checkLoginFields = async (body) => {
   }
 }
 
-module.exports.isAuthorizedToCreateUser = async (role, auth_role) => {
+module.exports.isAuthorizedToCreateUser = (role, auth_role) => {
   if (typeof(role) != 'string' || typeof(auth_role) != 'string') {
     throw new ValidationError('The request body was either not present or did not contain a valid User object.');
+  }
+  if (auth_role != 'admin' && role != 'student') {
+    throw new PermissionError('The request was not made by an authenticated User satisfying the authorization criteria.');
   }
 }
 
@@ -63,7 +85,7 @@ module.exports.createUser = async (userFields) => {
 module.exports.handleUserError = async (error) => {
   console.log('handleUserError: ', error);
   if (!(error instanceof ServerError)) {
-    return new ServerError('An error occurred while creating a new User.');
+    return new ServerError('An unexpected error occurred.');
   }
   return error;
 }

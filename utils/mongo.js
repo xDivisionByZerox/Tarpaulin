@@ -3,8 +3,8 @@ const mongoose = require('mongoose');
 
 const mongoHost = process.env.MONGO_HOST || 'localhost';
 const mongoPort = process.env.MONGO_PORT;
-const mongoUser = process.env.MONGO_USER;
-const mongoPassword = process.env.MONGO_PASSWORD;
+const mongoUser = process.env.MONGO_ROOT_USER;
+const mongoPassword = process.env.MONGO_ROOT_PASSWORD;
 const mongoDbName = process.env.MONGO_DB_NAME;
 const mongoAuthDbName = process.env.MONGO_AUTH_DB_NAME || mongoDbName
 
@@ -12,15 +12,15 @@ const mongoAuthDbName = process.env.MONGO_AUTH_DB_NAME || mongoDbName
 // Connection URI
 let mongoUrl;
 if (mongoHost == 'localhost') {
-    console.log(mongoHost)
-    // console.log("HITTING LOCALHOST")
-   mongoUrl = `mongodb://${mongoHost}/${mongoDbName}`;
+  console.log("HITTING LOCALHOST");
+  mongoUrl = `mongodb://${mongoHost}/${mongoDbName}`;
 } else{
-  // console.log("HITTING ELSE")
-  mongoUrl = `mongodb://${mongoUser}:${mongoPassword}@${mongoHost}:${mongoPort}/${mongoAuthDbName}?authSource=${mongoDbName}`;
+  console.log("HITTING ELSE");
+//   mongoUrl = `mongodb://${mongoUser}:${mongoPassword}@${mongoHost}:${mongoPort}/${mongoAuthDbName}?authSource=${mongoDbName}`;
+mongoUrl = `mongodb://${mongoUser}:${mongoPassword}@${mongoHost}:${mongoPort}/${mongoAuthDbName}`;
 }
-// const mongoUrl = `mongodb://${mongoHost}:${mongoPort}/${mongoDbName}`;
-// console.log(mongoUrl)
+
+console.log(mongoUrl)
 
 
 // Database connection

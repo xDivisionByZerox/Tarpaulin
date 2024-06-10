@@ -5,6 +5,7 @@ const { Assignment } = require('../models/assignment.js');
 const { User } = require('../models/user.js');
 const { validateAgainstModel, extractValidFields } = require('../utils/validation.js');
 const { ValidationError, PermissionError, ConflictError, ServerError, NotFoundError} = require('../utils/error.js');
+const { checkForExistingCourse, createCourse, handleCourseError } = require('../helpers/courseHelpers.js');
 
 
 
@@ -17,45 +18,18 @@ const { ValidationError, PermissionError, ConflictError, ServerError, NotFoundEr
  **/
 
 exports.createCourse = (body) => {
-  //untested
   return new Promise(async (resolve, reject) => {
     try{
-      const {role, auth_role} = body;
-
-      if (typeof(role) != 'string' || typeof(auth_role) != 'string') {
-        throw new ValidationError('The request body was either not present or did not contain a valid User object.');
-      }
-
-      if (auth_role != 'admin' && role == 'admin') { //difference between role and auth_role?
-        throw new PermissionError('The request was not authorized.');
-      }
-
+      await validateAgainstModel(body, Course);
+      await checkForExistingCourse(body);
       const courseFields = extractValidFields(body, Course);
-      const createdCourse = await Course.create(courseFields);
-      const response = {
-        id: createdCourse._id
-      };
+      const response = await createCourse(courseFields);
 
-      resolve(response);
-
+      return resolve(response);
     }
     catch (error) {
-      console.log(error)
-      if (!(error instanceof ServerError)) {
-        return reject(new ServerError('An error occurred while creating a new User.'));
-      }
-      return reject(error);
+      return reject(await handleCourseError(error));
     }
-    //commented out example endpoint. Requires removing of try/catch
-//     var examples = {};
-//     examples['application/json'] = {
-//   "id" : "123"
-// };
-//     if (Object.keys(examples).length > 0) {
-//       resolve(examples[Object.keys(examples)[0]]);
-//     } else {
-//       resolve();
-//     }
   });
 }
 
@@ -73,29 +47,53 @@ exports.createCourse = (body) => {
 
 exports.getAllCourses = (page,subject,number,term) => {
   //unfinished
-  return new Promise((resolve, reject) => {
-
-    var examples = {};
-    examples['application/json'] = {
-  "courses" : [ {
-    "number" : "493",
-    "subject" : "CS",
-    "term" : "sp22",
-    "title" : "Cloud Application Development",
-    "instructorId" : "123"
-  }, {
-    "number" : "493",
-    "subject" : "CS",
-    "term" : "sp22",
-    "title" : "Cloud Application Development",
-    "instructorId" : "123"
-  } ]
-};
-    if (Object.keys(examples).length > 0) {
-      resolve(examples[Object.keys(examples)[0]]);
-    } else {
-      resolve();
+  return new Promise(async (resolve, reject) => {
+    try{
+      let coursePage = parseInt(page) || 1;
+      const numPerPage = 10;
+      lengthOfCourses = await Course.countDocuments({}).count().exec()
+      const lastPage = Math.ceil(lengthOfCourses / numPerPage);
+      coursePage = coursePage > lastPage ? lastPage : coursePage;
+      coursePage = coursePage < 1 ? 1 : coursePage;
+    
+      /*
+       * Calculate starting and ending indices of courses on requested page and
+       * slice out the corresponsing sub-array of courses.
+       */
+      const start = (coursePage - 1) * numPerPage;
+      const end = start + numPerPage;
+      const pageBusinesses = Business.slice(start, end); //???
+    
+      /*
+       * Generate HATEOAS links for surrounding pages.
+       */
+      const links = {};
+      if (page < lastPage) {
+        links.nextPage = `/courses?page=${page + 1}`;
+        links.lastPage = `/courses?page=${lastPage}`;
+      }
+      if (page > 1) {
+        links.prevPage = `/courses?page=${page - 1}`;
+        links.firstPage = '/courses?page=1';
+      }
+    
+      /*
+       * Construct and send response.
+       */
+      res.status(200).json({
+        course: pageBusinesses, //???
+        pageNumber: coursePage,
+        totalPages: lastPage,
+        pageSize: numPerPage,
+        totalCount: lengthOfCourses,
+        links: links
+      });
+  
     }
+    catch{
+  
+    }
+
   });
 }
 
@@ -327,20 +325,17 @@ exports.removeCourseById = (id) => {
   return new Promise(async (resolve, reject) => {
     //Untested
     try{
-      const courseExist = await Course.countDocuments({_id: id }).count().exec(); //ensure id exists
+      const courseExist = await Course.countDocuments({ _id: id });
+
       if (courseExist != 1){
         throw new NotFoundError('Course not found.');
       }
-      await Course.deleteOne(id);
+      await Course.deleteOne({ _id: id });
+      return resolve({'message': 'Course deleted successfully.'});
     }
     catch (error){
-      console.log(error)
-      if (!(error instanceof ServerError)) {
-        return reject(new ServerError('An error occurred while creating a new User.'));
-      }
-      return reject(error);
+      return reject(await handleCourseError(error));
     }
-
   });
 }
 
@@ -403,23 +398,35 @@ exports.updateCourseById = (body,id) => {
  **/
 
 exports.updateEnrollmentByCourseId = (body,id) => {
-  return new Promise((resolve, reject) => {
-      //ARE WE MISSING ENROLLMENT DATA FIELD ON USER SCHEMA??
-  //Unfinished
+  return new Promise(async (resolve, reject) => {
+    //Untested
     try{
+      //NEEDS TO UPDATE TO HAVE AUTHORIZATION AS RELEVANT INSTRUCTOR OR ADMIN
+      const courseExist = await Course.countDocuments({_id: id }).count().exec(); //ensure id exists
+      if (courseExist != 1){
+        throw new NotFoundError('Course not found.');
+      }
       const {role, auth_role} = body;
       if (typeof(role) != 'string' || typeof(auth_role) != 'string') {
         throw new ValidationError('The request body was either not present or did not contain a valid User object.');
       }
-      if (auth_role != 'admin') { //difference between role and auth_role?
+      if (auth_role != 'admin' || (auth_role != 'instructor')) { //difference between role and auth_role?
         throw new PermissionError('The request was not authorized.');
       }
 
+
+
       for (let i = 0; i < body["add"].length; i++) {
-        //User.body["add"][i]
+        //add user onto courses students array(push operator?)
+        await Courses.updateOne({_id: id}, {$push: {students: body["add"][i].push}})
+        //add course to student courses array
+        await User.updateOne({_id: body["add"][i]}, {$push: {courses: body["add"][i]}})
       }
       for (let i = 0; i < body["remove"].length; i++) {
-        //User.body["remove"][i]
+        //remove user onto courses students array(push operator?)
+        await Courses.updateOne({_id: id}, {$pull: {students: body["add"][i].push}})
+        //remove course to student courses array
+        await User.updateOne({_id: body["add"][i]}, {$push: {courses: body["add"][i]}})
       } 
       resolve();
     }
