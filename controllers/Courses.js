@@ -45,12 +45,14 @@ module.exports.getAssignmentsByCourseId = function getAssignmentsByCourseId (req
 };
 
 module.exports.getCourseById = function getCourseById (req, res, next, id) {
-  Courses.getCourseById(id)
-    .then(function (response) {
+  rateLimiter(req, res, next)
+    .then(() => requireAuth(req, res, next))
+    .then(() => Courses.getCourseById(id))
+    .then((response) => {
       utils.writeJson(res, response);
     })
-    .catch(function (response) {
-      utils.writeJson(res, response);
+    .catch((error) => {
+      errorHandler(res, error);
     });
 };
 
