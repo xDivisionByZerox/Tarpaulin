@@ -5,7 +5,6 @@ var Courses = require('../service/CoursesService');
 const { requireAuth, checkPermissions } = require('../utils/auth.js');
 const { errorHandler }= require('../middleware/errorHandler');
 const { rateLimiter } = require('../utils/ratelimiter.js');
-const { PermissionError } = require('../utils/error.js');
 const { isAuthorizedToCreateCourse } = require('../helpers/courseHelpers.js');
 // Controllers call coresponding services, then passes response to Json writer to create response
 
