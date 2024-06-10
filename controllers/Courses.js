@@ -3,6 +3,8 @@
 var utils = require('../utils/writer.js');
 var Courses = require('../service/CoursesService');
 
+// Controllers call coresponding services, then passes response to Json writer to create response
+
 module.exports.createCourse = function createCourse (req, res, next, body) {
   checkPermissions(req, res, next, body).then(() => {
   Courses.createCourse(body)

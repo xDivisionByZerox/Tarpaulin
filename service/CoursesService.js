@@ -14,10 +14,11 @@ const { validateAgainstModel, extractValidFields } = require('../utils/validatio
  * body Course A Course object.
  * returns inline_response_201_1
  **/
-exports.createCourse = function(body) {
+
+exports.createCourse = (body) => {
 
   //untested
-  return new Promise(async function(resolve, reject) {
+  return new Promise((resolve, reject) => {
     try{
       const {role, auth_role} = body;
 
@@ -36,6 +37,7 @@ exports.createCourse = function(body) {
       };
 
       resolve(response);
+
     }
     catch (error) {
       console.log(error)
@@ -65,9 +67,11 @@ exports.createCourse = function(body) {
  * term String Fetch only Courses in the specified academic term.  (optional)
  * returns inline_response_200_1
  **/
-exports.getAllCourses = function(page,subject,number,term) {
+
+exports.getAllCourses = (page,subject,number,term) => {
   //unfinished
-  return new Promise(function(resolve, reject) {
+  return new Promise((resolve, reject) => {
+
     var examples = {};
     examples['application/json'] = {
   "courses" : [ {
@@ -100,8 +104,9 @@ exports.getAllCourses = function(page,subject,number,term) {
  * id id_4 Unique ID of a Course.  Exact type/format will depend on your implementation but will likely be either an integer or a string. 
  * returns inline_response_200_3
  **/
-exports.getAssignmentsByCourseId = function(id) {
-  return new Promise(async function(resolve, reject) {
+
+exports.getAssignmentsByCourseId = (id) => {
+  return new Promise((resolve, reject) => {
       //Untested/ likely unfinished
     try{
       const courseExist = await Course.countDocuments({id: id }).count().exec(); //ensure id exists
@@ -130,25 +135,26 @@ exports.getAssignmentsByCourseId = function(id) {
       reject(errorCodes[500]);
     }
 
-    var examples = {};
-    examples['application/json'] = {
-  "assignments" : [ {
-    "due" : "2022-06-14T17:00:00-07:00",
-    "title" : "Assignment 3",
-    "courseId" : "123",
-    "points" : 100
-  }, {
-    "due" : "2022-06-14T17:00:00-07:00",
-    "title" : "Assignment 3",
-    "courseId" : "123",
-    "points" : 100
-  } ]
-};
-    if (Object.keys(examples).length > 0) {
-      resolve(examples[Object.keys(examples)[0]]);
-    } else {
-      resolve();
-    }
+// Keeping around just in case
+//     var examples = {};
+//     examples['application/json'] = {
+//   "assignments" : [ {
+//     "due" : "2022-06-14T17:00:00-07:00",
+//     "title" : "Assignment 3",
+//     "courseId" : "123",
+//     "points" : 100
+//   }, {
+//     "due" : "2022-06-14T17:00:00-07:00",
+//     "title" : "Assignment 3",
+//     "courseId" : "123",
+//     "points" : 100
+//   } ]
+// };
+//     if (Object.keys(examples).length > 0) {
+//       resolve(examples[Object.keys(examples)[0]]);
+//     } else {
+//       resolve();
+//     }
   });
 }
 
@@ -160,9 +166,10 @@ exports.getAssignmentsByCourseId = function(id) {
  * id id_1 Unique ID of a Course.  Exact type/format will depend on your implementation but will likely be either an integer or a string. 
  * returns Course
  **/
-exports.getCourseById = function(id) {
-  //Untested
-  return new Promise(async function(resolve, reject) {
+
+exports.getCourseById = (id) => {
+  return new Promise((resolve, reject) => {
+    //Untested
     try{
       const courseExist = await Course.countDocuments({id: id }).count().exec(); //ensure id exists
       if (courseExist != 1){
@@ -211,9 +218,10 @@ exports.getCourseById = function(id) {
  * id id_3 Unique ID of a Course.  Exact type/format will depend on your implementation but will likely be either an integer or a string. 
  * returns String
  **/
-exports.getRosterByCourseId = function(id) {
-  //unfinished
-  return new Promise(async function(resolve, reject) {
+
+exports.getRosterByCourseId = (id) => {
+  return new Promise((resolve, reject) => {
+    //Unfinished
     try{
       const courseExist = await Course.countDocuments({id: id }).count().exec(); //ensure id exists
       if (courseExist != 1){
@@ -227,6 +235,7 @@ exports.getRosterByCourseId = function(id) {
     catch (error) {
       console.log(error)
       reject(errorCodes[500]);
+
     }
     //example kept for testing purposes
     // var examples = {};
@@ -247,8 +256,10 @@ exports.getRosterByCourseId = function(id) {
  * id id_2 Unique ID of a Course.  Exact type/format will depend on your implementation but will likely be either an integer or a string. 
  * returns inline_response_200_2
  **/
-exports.getStudentsByCourseId = function(id) {
-  return new Promise(async function(resolve, reject) {
+
+exports.getStudentsByCourseId = (id) => {
+  return new Promise((resolve, reject) => {
+    //Unfinished
     try{
       const courseExist = await Course.countDocuments({id: id }).count().exec(); //ensure id exists
       if (courseExist != 1){
@@ -265,6 +276,7 @@ exports.getStudentsByCourseId = function(id) {
     catch (error) {
       console.log(error)
       reject(errorCodes[500]);
+
     }
     //keeping for testing purposes
 //     var examples = {};
@@ -297,9 +309,10 @@ exports.getStudentsByCourseId = function(id) {
  * id id_1 Unique ID of a Course.  Exact type/format will depend on your implementation but will likely be either an integer or a string. 
  * no response value expected for this operation
  **/
-exports.removeCourseById = function(id) {
-  //Untested
-  return new Promise(async function(resolve, reject) {
+
+exports.removeCourseById = (id) => {
+  return new Promise((resolve, reject) => {
+    //Untested
     try{
       const courseExist = await Course.countDocuments({_id: id }).count().exec(); //ensure id exists
       if (courseExist != 1){
@@ -311,6 +324,7 @@ exports.removeCourseById = function(id) {
       console.log(error)
       reject(errorCodes[500]);
     }
+
   });
 }
 
@@ -324,9 +338,10 @@ exports.removeCourseById = function(id) {
  * id id_1 Unique ID of a Course.  Exact type/format will depend on your implementation but will likely be either an integer or a string. 
  * no response value expected for this operation
  **/
-exports.updateCourseById = function(body,id) {
-  //Untested
-  return new Promise(async function(resolve, reject) {
+
+exports.updateCourseById = (body,id) => {
+  return new Promise((resolve, reject) => {
+    //Untested
     try{
       const {role, auth_role} = body;
       if (typeof(role) != 'string' || typeof(auth_role) != 'string') {
@@ -353,6 +368,7 @@ exports.updateCourseById = function(body,id) {
       console.log(error)
       reject(errorCodes[500]);
     }
+
   });
 }
 
@@ -366,10 +382,11 @@ exports.updateCourseById = function(body,id) {
  * id id_2 Unique ID of a Course.  Exact type/format will depend on your implementation but will likely be either an integer or a string. 
  * no response value expected for this operation
  **/
-exports.updateEnrollmentByCourseId = function(body,id) {
-  //ARE WE MISSING ENROLLMENT DATA ON USER SCHEMA??
+
+exports.updateEnrollmentByCourseId = (body,id) => {
+  return new Promise((resolve, reject) => {
+      //ARE WE MISSING ENROLLMENT DATA FIELD ON USER SCHEMA??
   //Unfinished
-  return new Promise(function(resolve, reject) {
     try{
       const {role, auth_role} = body;
       if (typeof(role) != 'string' || typeof(auth_role) != 'string') {
@@ -391,6 +408,7 @@ exports.updateEnrollmentByCourseId = function(body,id) {
       console.log(error)
       reject(errorCodes[500]);
     }
+
   });
 }
 

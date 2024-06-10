@@ -1,51 +1,55 @@
-class ValidationError extends Error { // 400
-    constructor(message) {
+class ServerError extends Error {
+    constructor(message, code = 500) {
         super(message);
-        this.name = 'ValidationError';
+        this.name = this.constructor.name;
+        this.code = code;
+        Error.captureStackTrace(this, this.constructor);
     }
 }
-module.exports.ValidationError = ValidationError;
 
-class CredentialsError extends Error { // 401
+class ValidationError extends ServerError { // 400
     constructor(message) {
-        super(message);
-        this.name = 'CredentialsError';
+        super(message, 400);
     }
 }
-module.exports.CredentialsError = CredentialsError;
 
-class PermissionError extends Error { // 403
+class CredentialsError extends ServerError { // 401
     constructor(message) {
-        super(message);
-        this.name = 'PermissionError';
+        super(message, 401);
     }
 }
-module.exports.PermissionError = PermissionError;
 
-
-module.exports.errorCodes = {
-    400: {
-        code: 400,
-        payload: 'The request body was either not present or did not contain the required fields'
-    },
-    401: {
-        code: 401,
-        payload: 'The specified credentials were invalid.'
-    },
-    403: {
-        code: 403,
-        payload: 'The request was not made by an authenticated User satisfying the authorization criteria.'
-    },
-    404: {
-        code: 404,
-        payload: 'Specified object not found.'
-    },
-    409: {
-        code: 409,
-        payload: 'The given object already exists.'
-    },
-    500: {
-        code: 500,
-        payload: 'An internal server error occurred.'
+class PermissionError extends ServerError { // 403
+    constructor(message) {
+        super(message, 403);
     }
+}
+
+class NotFoundError extends ServerError { // 404
+    constructor(message) {
+        super(message, 404);
+    }
+}
+
+class ConflictError extends ServerError { // 409
+    constructor(message) {
+        super(message, 409);
+    }
+}
+
+class RateLimitError extends ServerError { // 429
+    constructor(message) {
+        super(message, 429);
+    }
+}
+
+
+module.exports = {
+    ServerError,
+    ValidationError,
+    CredentialsError,
+    PermissionError,
+    NotFoundError,
+    ConflictError,
+    RateLimitError
 }
