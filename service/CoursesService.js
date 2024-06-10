@@ -5,7 +5,7 @@ const { Assignment } = require('../models/assignment.js');
 const { User } = require('../models/user.js');
 const { validateAgainstModel, extractValidFields } = require('../utils/validation.js');
 const { ValidationError, PermissionError, ConflictError, ServerError, NotFoundError} = require('../utils/error.js');
-const { checkForExistingCourse, createCourse } = require('../helpers/courseHelpers.js');
+const { checkForExistingCourse, createCourse, handleCourseError } = require('../helpers/courseHelpers.js');
 
 
 
@@ -28,22 +28,8 @@ exports.createCourse = (body) => {
 
     }
     catch (error) {
-      console.log(error)
-      if (!(error instanceof ServerError)) {
-        return reject(new ServerError('An error occurred while creating a new Course.'));
-      }
-      return reject(error);
+      return reject(await handleCourseError(error));
     }
-    //commented out example endpoint. Requires removing of try/catch
-//     var examples = {};
-//     examples['application/json'] = {
-//   "id" : "123"
-// };
-//     if (Object.keys(examples).length > 0) {
-//       resolve(examples[Object.keys(examples)[0]]);
-//     } else {
-//       resolve();
-//     }
   });
 }
 
@@ -108,27 +94,6 @@ exports.getAllCourses = (page,subject,number,term) => {
   
     }
 
-//     var examples = {};
-//     examples['application/json'] = {
-//   "courses" : [ {
-//     "number" : "493",
-//     "subject" : "CS",
-//     "term" : "sp22",
-//     "title" : "Cloud Application Development",
-//     "instructorId" : "123"
-//   }, {
-//     "number" : "493",
-//     "subject" : "CS",
-//     "term" : "sp22",
-//     "title" : "Cloud Application Development",
-//     "instructorId" : "123"
-//   } ]
-// };
-//     if (Object.keys(examples).length > 0) {
-//       resolve(examples[Object.keys(examples)[0]]);
-//     } else {
-//       resolve();
-//     }
   });
 }
 

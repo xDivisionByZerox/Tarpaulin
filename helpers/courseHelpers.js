@@ -1,4 +1,4 @@
-const { PermissionError, ConflictError } = require('../utils/error.js');
+const { PermissionError, ConflictError, ServerError } = require('../utils/error.js');
 const { Course } = require('../models/course.js');
 
 module.exports.isAuthorizedToCreateCourse = (auth_role) => {
@@ -24,5 +24,12 @@ module.exports.createCourse = async (courseFields) => {
     }
   };
   return response;
+}
+
+module.exports.handleCourseError = async (error) => {
+  if (!(error instanceof ServerError)) {
+    return new ServerError('An error occurred while creating a new Course.');
+  }
+  return error;
 }
 
