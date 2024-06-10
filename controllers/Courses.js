@@ -2,19 +2,25 @@
 
 var utils = require('../utils/writer.js');
 var Courses = require('../service/CoursesService');
-
+const { requireAuth, checkPermissions } = require('../utils/auth.js');
+const { errorHandler }= require('../middleware/errorHandler');
+const { rateLimiter } = require('../utils/ratelimiter.js');
+const { PermissionError } = require('../utils/error.js');
+const { isAuthorizedToCreateCourse } = require('../helpers/courseHelpers.js');
 // Controllers call coresponding services, then passes response to Json writer to create response
 
 module.exports.createCourse = function createCourse (req, res, next, body) {
-  checkPermissions(req, res, next, body).then(() => {
-  Courses.createCourse(body)
-    .then(function (response) {
+  rateLimiter(req, res, next)
+    .then(() => requireAuth(req, res, next))
+    .then(() => checkPermissions(req, res, next, 'admin'))
+    .then(() => isAuthorizedToCreateCourse(req.auth_role))
+    .then(() => Courses.createCourse(body))
+    .then((response) => {
       utils.writeJson(res, response);
     })
-    .catch(function (response) {
-      utils.writeJson(res, response);
+    .catch((error) => {
+      errorHandler(res, error);
     });
-  });
 };
 
 module.exports.getAllCourses = function getAllCourses (req, res, next, page, subject, number, term) {
