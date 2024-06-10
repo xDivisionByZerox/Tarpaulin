@@ -33,7 +33,23 @@ module.exports.createCourse = async (courseFields) => {
   return response;
 }
 
+module.exports.generatePaginatedCourseLinks = (pageNumber, lastPage) => {
+  const links = {};
+  if (pageNumber < lastPage) {
+    links.nextPage = `/courses?page=${pageNumber + 1}`;
+    links.lastPage = `/courses?page=${lastPage}`;
+  }
+  if (pageNumber > 1) {
+    links.prevPage = `/courses?page=${pageNumber - 1}`;
+    links.firstPage = '/courses?page=1';
+  }
+  return links;
+}
+
+
+
 module.exports.handleCourseError = async (error) => {
+  console.error('Course Error: ', error);
   if (!(error instanceof ServerError)) {
     return new ServerError('An unexpected error occurred.');
   }
