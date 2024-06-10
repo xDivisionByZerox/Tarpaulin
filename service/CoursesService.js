@@ -3,6 +3,7 @@
 const { errorCodes } = require('../utils/error.js');
 const { Course } = require('../models/course.js');
 const { Assignment } = require('../models/assignment.js');
+const { User } = require('../models/user.js');
 const { validateAgainstModel, extractValidFields } = require('../utils/validation.js');
 
 
@@ -14,6 +15,8 @@ const { validateAgainstModel, extractValidFields } = require('../utils/validatio
  * returns inline_response_201_1
  **/
 exports.createCourse = function(body) {
+
+  //untested
   return new Promise(async function(resolve, reject) {
     try{
       const {role, auth_role} = body;
@@ -63,6 +66,7 @@ exports.createCourse = function(body) {
  * returns inline_response_200_1
  **/
 exports.getAllCourses = function(page,subject,number,term) {
+  //unfinished
   return new Promise(function(resolve, reject) {
     var examples = {};
     examples['application/json'] = {
@@ -98,26 +102,32 @@ exports.getAllCourses = function(page,subject,number,term) {
  **/
 exports.getAssignmentsByCourseId = function(id) {
   return new Promise(async function(resolve, reject) {
-
-      //UNFINISHED
+      //Untested/ likely unfinished
     try{
       const courseExist = await Course.countDocuments({id: id }).count().exec(); //ensure id exists
       if (courseExist != 1){
         return reject(errorCodes[404]);
       }
-      
+      //not sure if assignment count is necessary
+      //const assignmentCount = await Assignment.countDocuments({courseId: id }).count().exec()
+
       //check all assignments and find all that match, and store them into a variable?
       const foundAssignments = await Assignment.find({courseId: id})
+      // Should I push them into a array and then put t into a response?
+      // for (let i = 0; i < foundAssignments.length; i++) {
+      //   ???
+      // } 
 
-      const courseFields = extractValidFields(body, Course);
-      const createdCourse = await Course.create(courseFields);
       const response = {
-        id: createdCourse._id
+        courseId: id,
+        assignments: foundAssignments
       };
+      resolve(response);
 
     }
-    catch{
-
+    catch (error) {
+      console.log(error)
+      reject(errorCodes[500]);
     }
 
     var examples = {};
@@ -151,8 +161,8 @@ exports.getAssignmentsByCourseId = function(id) {
  * returns Course
  **/
 exports.getCourseById = function(id) {
+  //Untested
   return new Promise(async function(resolve, reject) {
-
     try{
       const courseExist = await Course.countDocuments({id: id }).count().exec(); //ensure id exists
       if (courseExist != 1){
@@ -202,14 +212,30 @@ exports.getCourseById = function(id) {
  * returns String
  **/
 exports.getRosterByCourseId = function(id) {
-  return new Promise(function(resolve, reject) {
-    var examples = {};
-    examples['application/json'] = "123,\"Jane Doe\",doej@oregonstate.edu\n...\n";
-    if (Object.keys(examples).length > 0) {
-      resolve(examples[Object.keys(examples)[0]]);
-    } else {
-      resolve();
+  //unfinished
+  return new Promise(async function(resolve, reject) {
+    try{
+      const courseExist = await Course.countDocuments({id: id }).count().exec(); //ensure id exists
+      if (courseExist != 1){
+        return reject(errorCodes[404]);
+      }
+      //find all students related to course
+      const foundStudents = await User.find({courseId: id, role: "student"})
+
+      //LOGIC TO LOOP THROUGH AND ADD THEM TO CSV FILE HERE
     }
+    catch (error) {
+      console.log(error)
+      reject(errorCodes[500]);
+    }
+    //example kept for testing purposes
+    // var examples = {};
+    // examples['application/json'] = "123,\"Jane Doe\",doej@oregonstate.edu\n...\n";
+    // if (Object.keys(examples).length > 0) {
+    //   resolve(examples[Object.keys(examples)[0]]);
+    // } else {
+    //   resolve();
+    // }
   });
 }
 
@@ -222,26 +248,44 @@ exports.getRosterByCourseId = function(id) {
  * returns inline_response_200_2
  **/
 exports.getStudentsByCourseId = function(id) {
-  return new Promise(function(resolve, reject) {
-    var examples = {};
-    examples['application/json'] = {
-  "students" : [ {
-    "password" : "hunter2",
-    "role" : "student",
-    "name" : "Jane Doe",
-    "email" : "doej@oregonstate.edu"
-  }, {
-    "password" : "hunter2",
-    "role" : "student",
-    "name" : "Jane Doe",
-    "email" : "doej@oregonstate.edu"
-  } ]
-};
-    if (Object.keys(examples).length > 0) {
-      resolve(examples[Object.keys(examples)[0]]);
-    } else {
-      resolve();
+  return new Promise(async function(resolve, reject) {
+    try{
+      const courseExist = await Course.countDocuments({id: id }).count().exec(); //ensure id exists
+      if (courseExist != 1){
+        return reject(errorCodes[404]);
+      }
+      const foundStudents = await User.find({courseId: id, role: "student"})
+
+      const response = {
+        courseId: id,
+        students: foundStudents
+      };
+      resolve(response);
     }
+    catch (error) {
+      console.log(error)
+      reject(errorCodes[500]);
+    }
+    //keeping for testing purposes
+//     var examples = {};
+//     examples['application/json'] = {
+//   "students" : [ {
+//     "password" : "hunter2",
+//     "role" : "student",
+//     "name" : "Jane Doe",
+//     "email" : "doej@oregonstate.edu"
+//   }, {
+//     "password" : "hunter2",
+//     "role" : "student",
+//     "name" : "Jane Doe",
+//     "email" : "doej@oregonstate.edu"
+//   } ]
+// };
+//     if (Object.keys(examples).length > 0) {
+//       resolve(examples[Object.keys(examples)[0]]);
+//     } else {
+//       resolve();
+//     }
   });
 }
 
@@ -254,13 +298,14 @@ exports.getStudentsByCourseId = function(id) {
  * no response value expected for this operation
  **/
 exports.removeCourseById = function(id) {
+  //Untested
   return new Promise(async function(resolve, reject) {
     try{
       const courseExist = await Course.countDocuments({_id: id }).count().exec(); //ensure id exists
       if (courseExist != 1){
         return reject(errorCodes[404]);
       }
-      await Course.deleteOne(id)
+      await Course.deleteOne(id);
     }
     catch (error){
       console.log(error)
@@ -280,6 +325,7 @@ exports.removeCourseById = function(id) {
  * no response value expected for this operation
  **/
 exports.updateCourseById = function(body,id) {
+  //Untested
   return new Promise(async function(resolve, reject) {
     try{
       const {role, auth_role} = body;
@@ -321,8 +367,30 @@ exports.updateCourseById = function(body,id) {
  * no response value expected for this operation
  **/
 exports.updateEnrollmentByCourseId = function(body,id) {
+  //ARE WE MISSING ENROLLMENT DATA ON USER SCHEMA??
+  //Unfinished
   return new Promise(function(resolve, reject) {
-    resolve();
+    try{
+      const {role, auth_role} = body;
+      if (typeof(role) != 'string' || typeof(auth_role) != 'string') {
+        return reject(errorCodes[400]);
+      }
+      if (auth_role != 'admin') { //difference between role and auth_role?
+        return reject(errorCodes[403]);
+      }
+
+      for (let i = 0; i < body["add"].length; i++) {
+        //User.body["add"][i]
+      }
+      for (let i = 0; i < body["remove"].length; i++) {
+        //User.body["remove"][i]
+      } 
+      resolve();
+    }
+    catch (error) {
+      console.log(error)
+      reject(errorCodes[500]);
+    }
   });
 }
 
