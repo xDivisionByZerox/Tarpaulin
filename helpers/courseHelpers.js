@@ -1,4 +1,4 @@
-const { PermissionError, ConflictError, ServerError } = require('../utils/error.js');
+const { PermissionError, ConflictError, ServerError, ValidationError } = require('../utils/error.js');
 const { Course } = require('../models/course.js');
 
 module.exports.isAdmin = (auth_role) => {
@@ -8,10 +8,17 @@ module.exports.isAdmin = (auth_role) => {
 }
 
 module.exports.checkForExistingCourse = async (body) => {
-  const existingCourse = await Course.findOne(body);
-  if (existingCourse) {
-    console.log('Course already exists.');
-    throw new ConflictError('A course with the specified fields already exists.');
+  try {
+    const existingCourse = await Course.findOne(body);
+    if (existingCourse) {
+      console.log('Course already exists.');
+      throw new ConflictError('A course with the specified fields already exists.');
+    }
+  } catch (error) {
+    if (error instanceof ConflictError) {
+      throw error;
+    }
+    throw new ValidationError('The request body was either not present or did not contain all the required fields.');
   }
 }
 

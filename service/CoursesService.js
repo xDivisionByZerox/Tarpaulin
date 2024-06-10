@@ -20,12 +20,12 @@ const { checkForExistingCourse, createCourse, handleCourseError } = require('../
 exports.createCourse = (body) => {
   return new Promise(async (resolve, reject) => {
     try{
+      await validateAgainstModel(body, Course);
       await checkForExistingCourse(body);
       const courseFields = extractValidFields(body, Course);
       const response = await createCourse(courseFields);
 
       return resolve(response);
-
     }
     catch (error) {
       return reject(await handleCourseError(error));
@@ -325,7 +325,9 @@ exports.removeCourseById = (id) => {
   return new Promise(async (resolve, reject) => {
     //Untested
     try{
+      console.log(id)
       const courseExist = await Course.countDocuments({_id: id }).count().exec(); //ensure id exists
+      console.log(courseExist)
       if (courseExist != 1){
         throw new NotFoundError('Course not found.');
       }
