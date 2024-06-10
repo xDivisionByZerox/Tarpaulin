@@ -28,15 +28,18 @@ const faker = require('faker');
 
 const mongoHost = process.env.MONGO_HOST || 'localhost';
 const mongoPort = process.env.MONGO_PORT || 27017;
-const mongoUser = process.env.MONGO_USER;
-const mongoPassword = process.env.MONGO_PASSWORD;
+const mongoUser = process.env.MONGO_ROOT_USER;
+const mongoPassword = process.env.MONGO_ROOT_PASSWORD;
 const mongoDbName = process.env.MONGO_DB_NAME;
 const mongoAuthDbName = process.env.MONGO_AUTH_DB_NAME;
 const mongoCreateUser = process.env.MONGO_CREATE_USER;
 const mongoCreatePassword = process.env.MONGO_CREATE_PASSWORD;
 
 // const mongoUrl = `mongodb://${mongoUser}:${mongoPassword}@${mongoHost}:${mongoPort}/${mongoAuthDbName}?authSource=${mongoDbName}`;
-const mongoUrl = `mongodb://${mongoHost}/${mongoDbName}`;
+
+const mongoUrl = `mongodb://${mongoUser}:${mongoPassword}@${mongoHost}:${mongoPort}/${mongoAuthDbName}`;
+// const mongoUrl = `mongodb://${mongoHost}/${mongoDbName}`;
+
 
 const options = {
   useNewUrlParser: true,

@@ -26,6 +26,8 @@ var app = expressAppConfig.getApp();
 async function startServer() {
     let count = 1;
     let connected = false;
+    //run connection in a loop to try to fix docker compose connection error
+    //ensures database is running before trying to connect
     while(!connected){
         try {
             console.log(`Attempt number ${count}`)
@@ -45,7 +47,7 @@ async function startServer() {
         
         } catch (error) {
             console.error('Failed to start server:', error);
-            if (count >= 10){
+            if (count >= 100){
                 exit(1);
             }
             count++;

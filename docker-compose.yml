@@ -3,23 +3,40 @@
 services:
   api:
     depends_on:
-    - tarpaulin #checks for mongo database container being started
+    - admin #checks for mongo database container being started
+    - redis
     build: . #building this vs using the mongo docker
     environment:
-      MONGO_PASSWORD: ${MONGO_PASSWORD} #need to add base user onto mongodb initdb below
-      MONGO_USER: ${MONGO_USER}
+      # MONGO_PASSWORD: ${MONGO_PASSWORD} #need to add base user onto mongodb initdb below
+      # MONGO_USER: ${MONGO_USER}
       MONGO_ROOT_USER: ${MONGO_ROOT_USER}
       MONGO_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD}
-      MONGO_HOST: "tarpaulin" #
+      MONGO_HOST: ${MONGO_HOST} #
       MONGO_DB_NAME: ${MONGO_DB_NAME}
     ports:
       - 8000:8000
 
-  tarpaulin:
+  admin:
     image: mongo
     environment:
-      MONGO_INITDB_ROOT_USERNAME: "root"
-      MONGO_INITDB_ROOT_PASSWORD: "hunter2"
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USER}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD}
       MONGO_INITDB_DATABASE: ${MONGO_DB_NAME}
     ports:
       - 27017:27017 #map external port calls to internal port. ensures "going where we expect"
+
+  redis:
+    image: redis:latest
+    restart: always
+    ports:
+      - ${REDIS_PORT}:${REDIS_PORT}
+    # Enviroment:
+
+
+  # initdb:
+  #   depends_on:
+  #     - tarpaulin
+  #   restart: on-failure
+  #   build: . #use dockerfile to build image
+  #   command: [ "node", "initDb.js" ]
+  #   # enviroment:
