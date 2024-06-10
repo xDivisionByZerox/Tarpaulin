@@ -13,3 +13,15 @@ module.exports.checkForExistingCourse = async (body) => {
       throw new ConflictError('A course with the specified fields already exists.');
     }
 }
+
+module.exports.createCourse = async (courseFields) => {
+  const createdCourse = await Course.create(courseFields);
+  const response = {
+    id: createdCourse._id,
+    links: {
+      course: `/courses/${createdCourse._id}`
+    }
+  };
+  return response;
+}
+
