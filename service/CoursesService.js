@@ -325,22 +325,17 @@ exports.removeCourseById = (id) => {
   return new Promise(async (resolve, reject) => {
     //Untested
     try{
-      console.log(id)
-      const courseExist = await Course.countDocuments({_id: id }).count().exec(); //ensure id exists
-      console.log(courseExist)
+      const courseExist = await Course.countDocuments({ _id: id });
+
       if (courseExist != 1){
         throw new NotFoundError('Course not found.');
       }
-      await Course.deleteOne(id);
+      await Course.deleteOne({ _id: id });
+      return resolve({'message': 'Course deleted successfully.'});
     }
     catch (error){
-      console.log(error)
-      if (!(error instanceof ServerError)) {
-        return reject(new ServerError('An error occurred while creating a new User.'));
-      }
-      return reject(error);
+      return reject(await handleCourseError(error));
     }
-
   });
 }
 
