@@ -23,6 +23,7 @@ const { Course } = require('./models/course.js');
 const { Assignment } = require('./models/assignment.js');
 const { Submission } = require('./models/submission.js');
 const { Error } = require('./models/error.js');
+const bcrypt = require('bcrypt');
 const faker = require('faker');
 
 const mongoHost = process.env.MONGO_HOST || 'localhost';
@@ -47,7 +48,11 @@ mongoose.connect(mongoUrl, options).then(async () => {
 
   try {
     await User.deleteMany({});
-    const insertedUsers = await User.insertMany(require('./data/users.json'));
+    const users = require('./data/users.json');
+    users.forEach(user => {
+      user.password = bcrypt.hashSync(user.password, 8);
+    })
+    const insertedUsers = await User.insertMany(users);
     console.log("== Inserted Users:", insertedUsers.map(b => b._id));
 
     // Create a new, lower-privileged database user if the correct environment variables were specified
