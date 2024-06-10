@@ -1,8 +1,8 @@
 'use strict';
-const { errorCodes } = require('../utils/error.js');
 const { User } = require('../models/user.js');
 const { validateAgainstModel, extractValidFields } = require('../utils/validation.js');
-const bcrypt = require('bcrypt');
+const { handleUserError, isAuthorizedToCreateUser, checkForExistingUser, hashAndExtractUserFields, createUser, checkLoginFields, getExistingUser, checkIfAuthenticated } = require('../helpers/userServiceHelpers.js');
+const { generateToken } = require('../utils/auth.js');
 
 
 /**
@@ -13,16 +13,18 @@ const bcrypt = require('bcrypt');
 
  * returns inline_response_200
  **/
-module.exports.authenticateUser = function(body) {
-  return new Promise(function(resolve, reject) {
-    var examples = {};
-    examples['application/json'] = {
-  "token" : "aaaaaaaa.bbbbbbbb.cccccccc"
-};
-    if (Object.keys(examples).length > 0) {
-      resolve(examples[Object.keys(examples)[0]]);
-    } else {
-      resolve();
+module.exports.authenticateUser = (body) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      await checkLoginFields(body);
+      const existingUser = await getExistingUser(body);
+
+      await checkIfAuthenticated(body, existingUser);
+      const token = await generateToken(existingUser._id);
+
+      return resolve(token);
+    } catch (error) {
+      return reject(await handleUserError(error));
     }
   });
 }
@@ -35,43 +37,24 @@ module.exports.authenticateUser = function(body) {
  * body User A User object.
  * returns inline_response_201
  **/
-module.exports.createUser = function(body) {
-  return new Promise(async function(resolve, reject) {
+module.exports.createUser = (body) => {
+  return new Promise(async (resolve, reject) => {
     try {
       await User.deleteMany(); // DELETE IN PRODUCTION
       const {role, auth_role} = body;
 
-      if (typeof(role) != 'string' || typeof(auth_role) != 'string') {
-        return reject(errorCodes[400]);
-      }
+      await Promise.all([
+        validateAgainstModel(body, User),
+        isAuthorizedToCreateUser(role, auth_role),
+        checkForExistingUser(body)
+      ]);
 
-      if (auth_role != 'admin' && (role == 'instructor' || role == 'admin')) {
-        return reject(errorCodes[403]);
-      }
+      const userFields = await hashAndExtractUserFields(body);
+      const response = await createUser(userFields);
 
-      const existingUser = await User.findOne({where: {email: body.email}});
-      
-      if (existingUser) {
-        return reject(errorCodes[409]);
-      }
-
-      if (!validateAgainstModel(body, User)) {
-        return reject(errorCodes[400]);
-      }
-
-      const passwordHash = await bcrypt.hash(body.password, 8);
-      body.password = passwordHash;
-
-      const userFields = extractValidFields(body, User);
-      const createdUser = await User.create(userFields);
-      const response = {
-        id: createdUser._id
-      };
-
-      resolve(response);
+      return resolve(response);
     } catch (error) {
-      console.log(error)
-      reject(errorCodes[500]);
+      return reject(await handleUserError(error));
     }
   });
 }
@@ -84,8 +67,8 @@ module.exports.createUser = function(body) {
  * id id Unique ID of a User.  Exact type/format will depend on your implementation but will likely be either an integer or a string. 
  * returns User
  **/
-module.exports.getUserById = function(id) {
-  return new Promise(function(resolve, reject) {
+module.exports.getUserById = (id) => {
+  return new Promise((resolve, reject) => {
     var examples = {};
     examples['application/json'] = {
   "password" : "hunter2",
