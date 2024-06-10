@@ -23,11 +23,11 @@ exports.createCourse = (body) => {
       const {role, auth_role} = body;
 
       if (typeof(role) != 'string' || typeof(auth_role) != 'string') {
-        return reject(errorCodes[400]);
+        throw new ValidationError('The request body was either not present or did not contain a valid User object.');
       }
 
       if (auth_role != 'admin' && role == 'admin') { //difference between role and auth_role?
-        return reject(errorCodes[403]);
+        throw new PermissionError('The request was not authorized.');
       }
 
       const courseFields = extractValidFields(body, Course);
@@ -109,12 +109,12 @@ exports.getAllCourses = (page,subject,number,term) => {
  **/
 
 exports.getAssignmentsByCourseId = (id) => {
-  return new Promise((resolve, reject) => {
+  return new Promise(async (resolve, reject) => {
       //Untested/ likely unfinished
     try{
       const courseExist = await Course.countDocuments({id: id }).count().exec(); //ensure id exists
       if (courseExist != 1){
-        return reject(errorCodes[404]);
+        throw new NotFoundError('Course not found.');
       }
       //not sure if assignment count is necessary
       //const assignmentCount = await Assignment.countDocuments({courseId: id }).count().exec()
@@ -179,7 +179,7 @@ exports.getCourseById = (id) => {
     try{
       const courseExist = await Course.countDocuments({id: id }).count().exec(); //ensure id exists
       if (courseExist != 1){
-        return reject(errorCodes[404]);
+        throw new NotFoundError('Course not found.');
       }
       //does it need error checking if in try/except block?
       const foundCourse = await Course.findById({id: id})
@@ -234,7 +234,7 @@ exports.getRosterByCourseId = (id) => {
     try{
       const courseExist = await Course.countDocuments({id: id }).count().exec(); //ensure id exists
       if (courseExist != 1){
-        return reject(errorCodes[404]);
+        throw new NotFoundError('Course not found.');
       }
       //find all students related to course
       const foundStudents = await User.find({courseId: id, role: "student"})
@@ -274,7 +274,7 @@ exports.getStudentsByCourseId = (id) => {
     try{
       const courseExist = await Course.countDocuments({id: id }).count().exec(); //ensure id exists
       if (courseExist != 1){
-        return reject(errorCodes[404]);
+        throw new NotFoundError('Course not found.');
       }
       const foundStudents = await User.find({courseId: id, role: "student"})
 
@@ -329,7 +329,7 @@ exports.removeCourseById = (id) => {
     try{
       const courseExist = await Course.countDocuments({_id: id }).count().exec(); //ensure id exists
       if (courseExist != 1){
-        return reject(errorCodes[404]);
+        throw new NotFoundError('Course not found.');
       }
       await Course.deleteOne(id);
     }
@@ -361,10 +361,10 @@ exports.updateCourseById = (body,id) => {
     try{
       const {role, auth_role} = body;
       if (typeof(role) != 'string' || typeof(auth_role) != 'string') {
-        return reject(errorCodes[400]);
+        throw new ValidationError('The request body was either not present or did not contain a valid User object.');
       }
       if (auth_role != 'admin') { //difference between role and auth_role?
-        return reject(errorCodes[403]);
+        throw new PermissionError('The request was not authorized.');
       }
 
       const courseFields = extractValidFields(body, Course);
@@ -385,7 +385,7 @@ exports.updateCourseById = (body,id) => {
       if (!(error instanceof ServerError)) {
         return reject(new ServerError('An error occurred while creating a new User.'));
       }
-      reject(errorCodes[500]);
+      return reject(error);
     }
 
   });
@@ -409,10 +409,10 @@ exports.updateEnrollmentByCourseId = (body,id) => {
     try{
       const {role, auth_role} = body;
       if (typeof(role) != 'string' || typeof(auth_role) != 'string') {
-        return reject(errorCodes[400]);
+        throw new ValidationError('The request body was either not present or did not contain a valid User object.');
       }
       if (auth_role != 'admin') { //difference between role and auth_role?
-        return reject(errorCodes[403]);
+        throw new PermissionError('The request was not authorized.');
       }
 
       for (let i = 0; i < body["add"].length; i++) {
@@ -428,7 +428,7 @@ exports.updateEnrollmentByCourseId = (body,id) => {
       if (!(error instanceof ServerError)) {
         return reject(new ServerError('An error occurred while creating a new User.'));
       }
-      reject(errorCodes[500]);
+      return reject(error);
     }
   });
 }
