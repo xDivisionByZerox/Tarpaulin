@@ -80,20 +80,19 @@ exports.getAllCourses = (page,subject,number,term) => {
       /*
        * Construct and send response.
        */
-      res.status(200).json({
-        course: pageBusinesses, //???
+      const response = {
+        course: pageBusinesses,
         pageNumber: coursePage,
         totalPages: lastPage,
         pageSize: numPerPage,
         totalCount: lengthOfCourses,
         links: links
-      });
-  
+      }
+      return resolve(response);
     }
-    catch{
-  
+    catch (error) {
+      return reject(await handleCourseError(error))
     }
-
   });
 }
 

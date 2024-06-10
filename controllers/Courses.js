@@ -23,12 +23,14 @@ module.exports.createCourse = function createCourse (req, res, next, body) {
 };
 
 module.exports.getAllCourses = function getAllCourses (req, res, next, page, subject, number, term) {
-  Courses.getAllCourses(page, subject, number, term)
-    .then(function (response) {
+  rateLimiter(req, res, next)
+    .then(() => requireAuth(req, res, next))
+    .then(() => Courses.getAllCourses(page, subject, number, term))
+    .then((response) => {
       utils.writeJson(res, response);
     })
-    .catch(function (response) {
-      utils.writeJson(res, response);
+    .catch((error) => {
+      errorHandler(res, error);
     });
 };
 
