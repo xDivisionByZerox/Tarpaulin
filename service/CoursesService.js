@@ -153,14 +153,11 @@ exports.getAssignmentsByCourseId = (id) => {
 
 exports.getCourseById = (id) => {
   return new Promise(async (resolve, reject) => {
-    //Untested
     try{
-      const courseExist = await Course.countDocuments({id: id }).count().exec(); //ensure id exists
-      if (courseExist != 1){
+      const foundCourse = await Course.findById({_id: id})
+      if (!foundCourse){
         throw new NotFoundError('Course not found.');
       }
-      //does it need error checking if in try/except block?
-      const foundCourse = await Course.findById({id: id})
       const response = {
         id: foundCourse._id,
         subject: foundCourse.subject,
@@ -169,31 +166,11 @@ exports.getCourseById = (id) => {
         term: foundCourse.term,
         instructorId: foundCourse.instructorId
       };
-      resolve(response)
-      
+      return resolve(response)
     }
     catch (error){
-      console.log(error)
-      if (!(error instanceof ServerError)) {
-        return reject(new ServerError('An error occurred while creating a new User.'));
-      }
-      return reject(error);
+      return reject(await handleCourseError(error));
     }
-
-    //prior example code, keeping around until tested
-//     var examples = {};
-//     examples['application/json'] = {
-//   "number" : "493",
-//   "subject" : "CS",
-//   "term" : "sp22",
-//   "title" : "Cloud Application Development",
-//   "instructorId" : "123"
-// };
-//     if (Object.keys(examples).length > 0) {
-//       resolve(examples[Object.keys(examples)[0]]);
-//     } else {
-//       resolve();
-//     }
   });
 }
 
