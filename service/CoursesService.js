@@ -5,7 +5,7 @@ const { Assignment } = require('../models/assignment.js');
 const { User } = require('../models/user.js');
 const { validateAgainstModel, extractValidFields } = require('../utils/validation.js');
 const { ValidationError, PermissionError, ConflictError, ServerError, NotFoundError} = require('../utils/error.js');
-const { checkForExistingCourse, createCourse, handleCourseError } = require('../helpers/courseHelpers.js');
+const { checkForExistingCourse, createCourse, handleCourseError, calculatePagination, generatePaginatedCourseLinks, mapCourses } = require('../helpers/courseHelpers.js');
 
 
 
@@ -49,46 +49,21 @@ exports.getAllCourses = (page, subject, number, term) => {
   //unfinished
   return new Promise(async (resolve, reject) => {
     try {
-      let coursePage = parseInt(page) || 1;
       const numPerPage = 10;
       const lengthOfCourses = await Course.countDocuments({});
 
-      const lastPage = Math.ceil(lengthOfCourses / numPerPage);
-      coursePage = Math.min(Math.max(coursePage, 1), lastPage);
-      const skip = (coursePage - 1) * numPerPage;
+      const { pageNumber, skip, lastPage } = calculatePagination(page, numPerPage, lengthOfCourses);
 
       const pageCourses = await Course.find({})
         .skip(skip)
         .limit(numPerPage);
     
-      /*
-       * Generate HATEOAS links for surrounding pages.
-       */
-      const links = {};
-      if (page < lastPage) {
-        links.nextPage = `/courses?page=${page + 1}`;
-        links.lastPage = `/courses?page=${lastPage}`;
-      }
-      if (page > 1) {
-        links.prevPage = `/courses?page=${page - 1}`;
-        links.firstPage = '/courses?page=1';
-      }
+      const links = generatePaginatedCourseLinks(pageNumber, lastPage);
+      const courses = mapCourses(pageCourses);
     
-      /*
-       * Construct and send response.
-       */
       const response = {
-        course: pageCourses.map(course => {
-          return {
-            id: course._id,
-            subject: course.subject,
-            number: course.number,
-            title: course.title,
-            term: course.term,
-            instructorId: course.instructorId
-          }
-        }),
-        pageNumber: coursePage,
+        courses: courses,
+        pageNumber: pageNumber,
         totalPages: lastPage,
         pageSize: numPerPage,
         totalCount: lengthOfCourses,
