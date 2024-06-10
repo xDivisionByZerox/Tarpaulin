@@ -51,14 +51,14 @@ mongoose.connect(mongoUrl, options).then(async () => {
     console.log("== Inserted Users:", insertedUsers.map(b => b._id));
 
     // Create a new, lower-privileged database user if the correct environment variables were specified
-    if (mongoCreateUser && mongoCreatePassword) {
-      await createMongoUser(mongoCreateUser, mongoCreatePassword);
-    }
-    await Course.deleteMany({});
-    await Assignment.deleteMany({});
-
-    await generateCourses();
-    await generateAssignments();
+    // if (mongoCreateUser && mongoCreatePassword) {
+    //   await createMongoUser(mongoCreateUser, mongoCreatePassword);
+    // }
+    // await Course.deleteMany({});
+    // await Assignment.deleteMany({});
+    //
+    // await generateCourses();
+    // await generateAssignments();
 
   } catch (error) {
     console.error("Error during database operations:", error);
