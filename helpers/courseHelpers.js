@@ -35,7 +35,7 @@ module.exports.createCourse = async (courseFields) => {
 
 module.exports.handleCourseError = async (error) => {
   if (!(error instanceof ServerError)) {
-    return new ServerError('An error occurred while creating a new Course.');
+    return new ServerError('An unexpected error occurred.');
   }
   return error;
 }

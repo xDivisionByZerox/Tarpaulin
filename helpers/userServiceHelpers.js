@@ -85,7 +85,7 @@ module.exports.createUser = async (userFields) => {
 module.exports.handleUserError = async (error) => {
   console.log('handleUserError: ', error);
   if (!(error instanceof ServerError)) {
-    return new ServerError('An error occurred while creating a new User.');
+    return new ServerError('An unexpected error occurred.');
   }
   return error;
 }
