@@ -87,6 +87,17 @@ module.exports.mapCourses = (courses) => {
   });
 }
 
+module.exports.getCourseObjectById = async (id) => {
+  try {
+    const course = await Course.findById(id);
+    return course;
+  } catch (error) {
+    return new NotFoundError('Course not found.');
+  }
+}
+
+
+
 module.exports.calculatePagination = (page, numPerPage, totalItems) => {
   const coursePage = parseInt(page) || 1;
   const lastPage = Math.ceil(totalItems / numPerPage);
