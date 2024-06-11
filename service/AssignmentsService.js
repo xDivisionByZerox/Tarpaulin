@@ -3,6 +3,7 @@
 const { checkForExistingAssignment, isInstructorOrAdminAssignment, createAssignment, getAssignment, handleAssignmentError, checkForExistingSubmission, calculatePagination, generatePaginatedSubmissionLinks } = require("../helpers/assignmentHelpers");
 const { Assignment } = require("../models/assignment");
 const { Submission } = require("../models/submission");
+const { validateAgainstModel, extractValidFields } = require("../utils/validation.js");
 
 
 /**
@@ -15,12 +16,24 @@ const { Submission } = require("../models/submission");
 exports.createAssignment = (body) => {
   return new Promise(async(resolve, reject) => {
     console.log("REACHING CREATE ASSIGNMENT ENDPOINT")
-    try{
-      console.log("IN TRY OF CREATEASSIGNMENT")
-      await validateAgainstModel(body, Assignment);
-      await checkForExistingAssignment(body);
-      const assignmentFields = extractValidFields(body, Assignment);
+    try {
+      console.log("BEFORE VALIDATE AGAINST MODEL")
+      const assignment = {
+        courseId: body.courseId,
+        title: body.title,
+        points: body.points,
+        due: new Date(Date.now())
+      }
+      // body.due = new Date.now();
+      console.log("BEFORE VALIDATE AGAINST MODEL")
+      await validateAgainstModel(assignment, Assignment);
+      console.log("AFTER VALIDATE AGAINST MODEL")
+      await checkForExistingAssignment(assignment);
+      console.log("AFTER CHECK FOR EXISTING ASSIGNMENT")
+      const assignmentFields = extractValidFields(assignment, Assignment);
+      console.log("AFTER EXTRACT VALID FIELDS")
       const response = await createAssignment(assignmentFields);
+      console.log("AFTER CREATE ASSIGNMENT")
 
       return resolve(response);
     }
