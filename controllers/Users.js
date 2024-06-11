@@ -5,7 +5,7 @@ var Users = require('../service/UsersService');
 const { requireAuth, checkPermissions } = require('../utils/auth.js');
 const { errorHandler }= require('../middleware/errorHandler');
 const { rateLimiter } = require('../utils/ratelimiter.js');
-const { isAuthorizedToCreateUser } = require('../helpers/userServiceHelpers.js');
+const { isAuthorizedToCreateUser } = require('../helpers/userHelpers.js');
 
 
 // Controllers call coresponding services, then passes response to Json writer to create response
