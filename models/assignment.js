@@ -30,6 +30,12 @@ const AssignmentSchema = new mongoose.Schema({
                 return new Date(due);
             }
         }
+    },
+    submissions: {
+        type: [mongoose.Schema.Types.ObjectId],
+        ref: 'Submission',
+        default: [],
+        required: false
     }
 })
 const Assignment = mongoose.model('Assignment', AssignmentSchema)

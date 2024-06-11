@@ -1,5 +1,9 @@
 'use strict';
 
+const { checkForExistingAssignment, isInstructorOrAdminAssignment, createAssignment, getAssignment, handleAssignmentError, checkForExistingSubmission } = require("../helpers/assignmentHelpers");
+const { Assignment } = require("../models/assignment");
+const { Submission } = require("../models/submission");
+
 
 /**
  * Create a new Assignment.
@@ -9,15 +13,19 @@
  * returns inline_response_201_2
  **/
 exports.createAssignment = (body) => {
-  return new Promise((resolve, reject) => {
-    var examples = {};
-    examples['application/json'] = {
-  "id" : "123"
-};
-    if (Object.keys(examples).length > 0) {
-      resolve(examples[Object.keys(examples)[0]]);
-    } else {
-      resolve();
+  return new Promise(async(resolve, reject) => {
+    try{
+      //const {authrole} = body;
+      //await isInstructorOrAdminAssignment(authrole); //Is this necessary?
+      await validateAgainstModel(body, Assignment);
+      await checkForExistingAssignment(body);
+      const assignmentFields = extractValidFields(body, Assignment);
+      const response = await createAssignment(assignmentFields);
+
+      return resolve(response);
+    }
+    catch (error) {
+      return reject(await handleAssignmentError(error));
     }
   });
 }
@@ -32,15 +40,19 @@ exports.createAssignment = (body) => {
  * returns inline_response_201_3
  **/
 exports.createSubmission = (body,id) => {
-  return new Promise((resolve, reject) => {
-    var examples = {};
-    examples['application/json'] = {
-  "id" : "123"
-};
-    if (Object.keys(examples).length > 0) {
-      resolve(examples[Object.keys(examples)[0]]);
-    } else {
-      resolve();
+  return new Promise(async (resolve, reject) => {
+    try{
+      const {authrole} = body;
+      //await isInstructorOrAdminAssignment(authrole); //Is this necessary?
+      await validateAgainstModel(body, Submission);
+      await checkForExistingSubmission(body);
+      const assignmentFields = extractValidFields(body, Submission);
+      const response = await createAssignment(assignmentFields);
+
+      return resolve(response);
+    }
+    catch (error) {
+      return reject(await handleAssignmentError(error));
     }
   });
 }
@@ -54,18 +66,21 @@ exports.createSubmission = (body,id) => {
  * returns Assignment
  **/
 exports.getAssignmentById = (id) => {
-  return new Promise((resolve, reject) => {
-    var examples = {};
-    examples['application/json'] = {
-  "due" : "2022-06-14T17:00:00-07:00",
-  "title" : "Assignment 3",
-  "courseId" : "123",
-  "points" : 100
-};
-    if (Object.keys(examples).length > 0) {
-      resolve(examples[Object.keys(examples)[0]]);
-    } else {
-      resolve();
+  //untested, getting errors on 
+  return new Promise(async (resolve, reject) => {
+    try {
+      const assignment = await getAssignment(id)
+
+      const response = {
+        id: id,
+        courseID: assignment.id,
+        points: assignment.points,
+        due: assignment.due
+        }
+        return resolve(response);
+      }
+      catch (error) {
+      return reject(await handleAssignmentError(error));
     }
   });
 }
@@ -115,8 +130,19 @@ exports.getSubmissionsByAssignmentId = (id,page,studentId) => {
  * no response value expected for this operation
  **/
 exports.removeAssignmentsById = (id) => {
-  return new Promise((resolve, reject) => {
-    resolve();
+  return new Promise(async (resolve, reject) => {
+    try{
+      const assignmentExist = await Assignment.countDocuments({ _id: id });
+
+      if (assignmentExist != 1){
+        throw new NotFoundError('Assignment not found.');
+      }
+      await Assignment.deleteOne({ _id: id });
+      return resolve({'message': 'Assignment deleted successfully.'});
+    }
+    catch (error){
+      return reject(await handleAssignmentError(error));
+    }
   });
 }
 
