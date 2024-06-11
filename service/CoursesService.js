@@ -1,13 +1,9 @@
 'use strict';
 
 const { Course } = require('../models/course.js');
-const { Assignment } = require('../models/assignment.js');
-const { User } = require('../models/user.js');
 const { validateAgainstModel, extractValidFields } = require('../utils/validation.js');
-const { ValidationError, PermissionError, ConflictError, ServerError, NotFoundError} = require('../utils/error.js');
+const { ValidationError, NotFoundError} = require('../utils/error.js');
 const { checkForExistingCourse, createCourse, handleCourseError, calculatePagination, generatePaginatedCourseLinks, mapCourses, getCourseObjectById, getStudentDataByIds, createAndStreamRoster, updateEnrollmentForCourseId } = require('../helpers/courseHelpers.js');
-const { createObjectCsvStringifier } = require('csv-writer');
-const { Readable } = require('stream');
 
 /**
  * Create a new course.
