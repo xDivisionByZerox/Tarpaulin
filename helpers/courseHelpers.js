@@ -8,7 +8,6 @@ module.exports.isCourseInstructor = (auth_role, user_id, course_id) => {
         return resolve();
       }
       const course = await Course.findById(course_id);
-      console.log('Course: ', course);
       if (!course) {
         throw new PermissionError('The request was not made by an authenticated User satisfying the authorization criteria.');
       }
