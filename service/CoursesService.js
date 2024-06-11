@@ -5,9 +5,9 @@ const { Assignment } = require('../models/assignment.js');
 const { User } = require('../models/user.js');
 const { validateAgainstModel, extractValidFields } = require('../utils/validation.js');
 const { ValidationError, PermissionError, ConflictError, ServerError, NotFoundError} = require('../utils/error.js');
-const { checkForExistingCourse, createCourse, handleCourseError, calculatePagination, generatePaginatedCourseLinks, mapCourses } = require('../helpers/courseHelpers.js');
-const { createCsvStringifier } = require('csv-writer');
-
+const { checkForExistingCourse, createCourse, handleCourseError, calculatePagination, generatePaginatedCourseLinks, mapCourses, getCourseObjectById, getStudentDataByIds, createAndStreamRoster } = require('../helpers/courseHelpers.js');
+const { createObjectCsvStringifier } = require('csv-writer');
+const { Readable } = require('stream');
 
 /**
  * Create a new course.
@@ -186,40 +186,11 @@ exports.getCourseById = (id) => {
 exports.getRosterByCourseId = (id, res) => {
   return new Promise(async (resolve, reject) => {
     try{
-      const course = await Course.findById(id);
-      if (!course || course.students.length == 0){
-        throw new NotFoundError('No students found in course.');
-      }
+      const course = await getCourseObjectById(id);
+      const studentData = await getStudentDataByIds(course.students);
 
-      const students = course.students.map(student => {
-        return {
-          name: student.name,
-          id: student.id,
-          email: student.email
-        }
-      });
-      const csvHeaders = [
-        { id: 'id', title: 'ID' },
-        { id: 'name', title: 'Name' },
-        { id: 'email', title: 'Email' }
-      ];
-
-      // Create CSV stringifier
-      const csvStringifier = createCsvStringifier({ header: csvHeaders });
-
-      res.setHeader('Content-Type', 'text/csv');
-      res.attachment(`${course.term}-${course.title}-roster.csv`);
-
-      // Pipe CSV data to the response stream
-      const csvContent = csvStringifier.getHeaderString() + csvStringifier.stringifyRecords(students);
-      const csvStream = new Readable();
-      csvStream.push(csvContent);
-      csvStream.push(null)
-      csvStream.pipe(res);
-
-      return resolve();
-    }
-    catch (error) {
+      createAndStreamRoster(res, course, studentData);
+    } catch (error) {
       return reject(await handleCourseError(error));
     }
   });
@@ -368,7 +339,6 @@ exports.updateEnrollmentByCourseId = (body,id) => {
           course: `/courses/${id}`
         }
       };
-
 
       return resolve(response);
     }

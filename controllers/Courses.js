@@ -61,9 +61,6 @@ module.exports.getRosterByCourseId = function getRosterByCourseId (req, res, nex
     .then(() => requireAuth(req, res, next))
     .then(() => isCourseInstructor(req.auth_role, req.user_id, id))
     .then(() => Courses.getRosterByCourseId(id, res))
-    .then((response) => {
-      utils.writeJson(res, response);
-    })
     .catch((error) => {
       errorHandler(res, error);
     })
