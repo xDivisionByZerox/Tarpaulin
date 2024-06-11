@@ -77,7 +77,7 @@ module.exports.updateEnrollmentForCourseId = async (id, body) => {
         }
       }
   } catch (error) {
-    return new NotFoundError('Course not found.');
+    throw error;
   }
 }
 
@@ -116,7 +116,7 @@ module.exports.getCourseObjectById = async (id) => {
     const course = await Course.findById(id);
     return course;
   } catch (error) {
-    return new NotFoundError('Course not found.');
+    throw new NotFoundError('Course not found.');
   }
 }
 
@@ -139,7 +139,7 @@ module.exports.createAndStreamRoster = async (res, course, studentData) => {
     csvStream.push(null)
     csvStream.pipe(res).on('finish', () => Promise.resolve());
   } catch (error) {
-    return error;
+    throw error;
   }
 }
 
@@ -151,7 +151,7 @@ module.exports.getStudentDataByIds = async (studentIds) => {
     }
     return students;
   } catch (error) {
-    return error;
+    throw error;
   }
 }
 
