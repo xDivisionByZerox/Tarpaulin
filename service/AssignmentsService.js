@@ -14,7 +14,9 @@ const { Submission } = require("../models/submission");
  **/
 exports.createAssignment = (body) => {
   return new Promise(async(resolve, reject) => {
+    console.log("REACHING CREATE ASSIGNMENT ENDPOINT")
     try{
+      console.log("IN TRY OF CREATEASSIGNMENT")
       await validateAgainstModel(body, Assignment);
       await checkForExistingAssignment(body);
       const assignmentFields = extractValidFields(body, Assignment);
@@ -23,6 +25,7 @@ exports.createAssignment = (body) => {
       return resolve(response);
     }
     catch (error) {
+      console.log("IN ERROR OF CREATEASSIGNMENT")
       return reject(await handleAssignmentError(error));
     }
   });

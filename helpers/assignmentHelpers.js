@@ -4,6 +4,26 @@ const { Submission } = require('../models/submission.js');
 const { User } = require('../models/user.js');
 const { Course } = require('../models/course.js');
 
+
+module.exports.isCourseInstructor = (auth_role, user_id, course_id) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      if (auth_role == 'admin') {
+        return resolve();
+      }
+      const course = await Course.findById(course_id);
+      if (!course) {
+        throw new PermissionError('The request was not made by an authenticated User satisfying the authorization criteria.');
+      }
+      if (course.instructorId != user_id) {
+        throw new PermissionError('The request was not made by an authenticated User satisfying the authorization criteria.');
+      }
+      return resolve();
+    } catch (error) {
+      return reject(await this.handleCourseError(error));
+    }
+  })
+
 module.exports.isAdminAssignment = (auth_role) => {
     if (auth_role != 'admin') {
       throw new PermissionError('The request was not made by an authenticated User satisfying the authorization criteria.');
@@ -113,6 +133,7 @@ module.exports.checkIfStudentInCourse = async (userId, assignmentId) => {
 
 
 module.exports.createAssignment = async (assignmentFields) => {
+  console.log("REACHING CREATE ASSIGNMENT HELPER")
   const createdAssignment = await Assignment.create(assignmentFields);
   const response = {
     id: createdAssignment._id,
