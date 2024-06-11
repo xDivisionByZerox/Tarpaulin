@@ -88,35 +88,19 @@ exports.getAllCourses = (page, subject, number, term) => {
 
 exports.getAssignmentsByCourseId = (id) => {
   return new Promise(async (resolve, reject) => {
-      //Untested/ likely unfinished
-    try{
-      const courseExist = await Course.countDocuments({id: id }).count().exec(); //ensure id exists
-      if (courseExist != 1){
-        throw new NotFoundError('Course not found.');
-      }
-      //not sure if assignment count is necessary
-      //const assignmentCount = await Assignment.countDocuments({courseId: id }).count().exec()
-
-      //check all assignments and find all that match, and store them into a variable?
-      const foundAssignments = await Assignment.find({courseId: id})
-      // Should I push them into a array and then put t into a response?
-      // for (let i = 0; i < foundAssignments.length; i++) {
-      //   ???
-      // } 
+    try {
+      const course = await getCourseObjectById(id);
+      const assignments = course.assignments;
 
       const response = {
         courseId: id,
-        assignments: foundAssignments
+        assignments: assignments
       };
-      resolve(response);
 
-    }
-    catch (error) {
-      console.log(error)
-      if (!(error instanceof ServerError)) {
-        return reject(new ServerError('An error occurred while creating a new User.'));
-      }
-      return reject(error);
+      return resolve(response);
+
+    } catch (error) {
+      return reject(await handleCourseError(error));
     }
   });
 }
