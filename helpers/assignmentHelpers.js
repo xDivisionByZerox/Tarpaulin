@@ -2,19 +2,45 @@ const { PermissionError, ConflictError, ServerError, ValidationError } = require
 const { Assignment } = require('../models/assignment.js');
 const { Submission } = require('../models/submission.js');
 const { User } = require('../models/user.js');
+const { Course } = require('../models/course.js');
 
 module.exports.isAdminAssignment = (auth_role) => {
     if (auth_role != 'admin') {
       throw new PermissionError('The request was not made by an authenticated User satisfying the authorization criteria.');
     }
-  }
+}
+
+module.exports.isAssignmentInstructor = (auth_role, user_id, assignment_id) => {
+    return new Promise(async (resolve, reject) => {
+    try {
+      if (auth_role == 'admin') {
+        return resolve();
+      }
+
+      const assignment = await Assignment.findById(assignment_id);
+      if (!assignment) {
+        throw new NotFoundError('Assignment not found.');
+      }
+      const course = await Course.findById(assignment.courseId);
+      if (!course) {
+        throw new NotFoundError('Course not found.');
+      }
+      if (course.instructorId != user_id) {
+        throw new PermissionError('The request was not made by an authenticated User satisfying the authorization criteria.');
+      }
+      return resolve();
+    } catch (error) {
+      return reject(await this.handleAssignmentError(error));
+    }
+  })
+}
 
   
 module.exports.isInstructorOrAdminAssignment = (auth_role) => {
     if (auth_role != 'admin') {
       throw new PermissionError('The request was not made by an authenticated User satisfying the authorization criteria.');
     }
-  }
+}
 
 module.exports.checkForExistingAssignment = async (body) => {
   try {
