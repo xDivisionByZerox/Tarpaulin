@@ -23,6 +23,7 @@ module.exports.isCourseInstructor = (auth_role, user_id, course_id) => {
       return reject(await this.handleCourseError(error));
     }
   })
+}
 
 module.exports.isAdminAssignment = (auth_role) => {
     if (auth_role != 'admin') {
