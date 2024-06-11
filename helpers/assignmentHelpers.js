@@ -35,6 +35,14 @@ module.exports.isAssignmentInstructor = (auth_role, user_id, assignment_id) => {
   })
 }
 
+module.exports.calculatePagination = (page, numPerPage, totalItems) => {
+  const coursePage = parseInt(page) || 1;
+  const lastPage = Math.ceil(totalItems / numPerPage);
+  const pageNumber = Math.min(Math.max(coursePage, 1), lastPage);
+  const skip = (pageNumber - 1) * numPerPage;
+  
+  return { pageNumber, skip, lastPage };
+};
   
 module.exports.isInstructorOrAdminAssignment = (auth_role) => {
     if (auth_role != 'admin') {
