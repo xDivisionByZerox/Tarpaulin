@@ -35,7 +35,7 @@ module.exports.isAssignmentInstructor = (auth_role, user_id, assignment_id) => {
   })
 }
 
-module.exports.generatePaginatedAssignmentLinks = (pageNumber, lastPage, assignment_id, student_id) => {
+module.exports.generatePaginatedSubmissionLinks = (pageNumber, lastPage, assignment_id, student_id) => {
   const links = {};
   if (pageNumber < lastPage) {
     links.nextPage = `/assignments/${assignment_id}/submissions/?page=${pageNumber + 1}&studentId=${student_id}`;
