@@ -5,7 +5,7 @@ const { Assignment } = require('../models/assignment.js');
 const { User } = require('../models/user.js');
 const { validateAgainstModel, extractValidFields } = require('../utils/validation.js');
 const { ValidationError, PermissionError, ConflictError, ServerError, NotFoundError} = require('../utils/error.js');
-const { checkForExistingCourse, createCourse, handleCourseError, calculatePagination, generatePaginatedCourseLinks, mapCourses, getCourseObjectById, getStudentDataByIds, createAndStreamRoster } = require('../helpers/courseHelpers.js');
+const { checkForExistingCourse, createCourse, handleCourseError, calculatePagination, generatePaginatedCourseLinks, mapCourses, getCourseObjectById, getStudentDataByIds, createAndStreamRoster, updateEnrollmentForCourseId } = require('../helpers/courseHelpers.js');
 const { createObjectCsvStringifier } = require('csv-writer');
 const { Readable } = require('stream');
 
@@ -286,7 +286,7 @@ exports.updateCourseById = (body,id) => {
  * no response value expected for this operation
  **/
 
-exports.updateEnrollmentByCourseId = (body,id) => {
+exports.updateEnrollmentByCourseId = (body, id) => {
   return new Promise(async (resolve, reject) => {
     try {
       if (!body.add && !body.remove) {
@@ -298,19 +298,7 @@ exports.updateEnrollmentByCourseId = (body,id) => {
         throw new NotFoundError('Course not found.');
       }
 
-      if (!!body.add) {
-        for (let studentId of body.add) {
-          await Course.updateOne({ _id: id }, { $addToSet: { students: studentId } });
-          await User.updateOne({ _id: studentId }, { $addToSet: { courses: id } });
-        }
-      }
-
-      if (!!body.remove) {
-        for (let studentId of body.remove) {
-          await Course.updateOne({ _id: id }, { $pull: { students: studentId } });
-          await User.updateOne({ _id: studentId }, { $pull: { courses: id } });
-        }
-      }
+      await updateEnrollmentForCourseId(id, body);
 
       const response = {
         message: 'Enrollment updated successfully.',
