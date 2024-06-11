@@ -146,9 +146,6 @@ module.exports.createAndStreamRoster = async (res, course, studentData) => {
 module.exports.getStudentDataByIds = async (studentIds) => {
   try {
     const students = await User.find({ _id: { $in: studentIds } });
-    if (!students || students.length == 0) {
-      throw new NotFoundError('Students not found.');
-    }
     return students;
   } catch (error) {
     throw error;
