@@ -35,6 +35,12 @@ const CourseSchema = new mongoose.Schema({
         ref: 'User',
         default: [],
         required: false
+    },
+    assignments: {
+        type: [mongoose.Schema.Types.ObjectId],
+        ref: 'Assignment',
+        default: [],
+        required: false
     }
 })
 const Course = mongoose.model('Course', CourseSchema)
