@@ -320,37 +320,33 @@ exports.removeCourseById = (id) => {
 
 exports.updateCourseById = (body,id) => {
   return new Promise(async (resolve, reject) => {
-    //Untested
-    try{
-      const {role, auth_role} = body;
-      if (typeof(role) != 'string' || typeof(auth_role) != 'string') {
-        throw new ValidationError('The request body was either not present or did not contain a valid User object.');
-      }
-      if (auth_role != 'admin') { //difference between role and auth_role?
-        throw new PermissionError('The request was not authorized.');
-      }
-
+    try {
       const courseFields = extractValidFields(body, Course);
-      const updatedCourse = await Course.updateOne({_id: id }, courseFields); // This might not be the exact way to do this
+      const updatedCourse = await Course.findOneAndUpdate(
+        { _id: id },
+        { $set: courseFields },
+        { new: true, runValidators: true }
+      );
+      if (!updatedCourse) {
+        throw new NotFoundError('Course not found.');
+      }
       const response = {
         id: updatedCourse._id,
         subject: updatedCourse.subject,
         number: updatedCourse.number,
         title: updatedCourse.title,
         term: updatedCourse.term,
-        instructorId: updatedCourse.instructorId
+        instructorId: updatedCourse.instructorId,
+        links: {
+          course: `/courses/${updatedCourse._id}`
+        }
       };
 
       resolve(response);
     }
     catch (error) {
-      console.log(error)
-      if (!(error instanceof ServerError)) {
-        return reject(new ServerError('An error occurred while creating a new User.'));
-      }
-      return reject(error);
+      return reject(await handleCourseError(error));
     }
-
   });
 }
 
