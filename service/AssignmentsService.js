@@ -15,8 +15,6 @@ const { Submission } = require("../models/submission");
 exports.createAssignment = (body) => {
   return new Promise(async(resolve, reject) => {
     try{
-      //const {authrole} = body;
-      //await isInstructorOrAdminAssignment(authrole); //Is this necessary?
       await validateAgainstModel(body, Assignment);
       await checkForExistingAssignment(body);
       const assignmentFields = extractValidFields(body, Assignment);
@@ -42,12 +40,10 @@ exports.createAssignment = (body) => {
 exports.createSubmission = (body,id) => {
   return new Promise(async (resolve, reject) => {
     try{
-      const {authrole} = body;
-      //await isInstructorOrAdminAssignment(authrole); //Is this necessary?
+      //untested
       await validateAgainstModel(body, Submission);
-      await checkForExistingSubmission(body);
-      const assignmentFields = extractValidFields(body, Submission);
-      const response = await createAssignment(assignmentFields);
+      const submissionFields = extractValidFields(body, Submission);
+      const response = await createSubmission(submissionFields, id);
 
       return resolve(response);
     }
@@ -66,7 +62,7 @@ exports.createSubmission = (body,id) => {
  * returns Assignment
  **/
 exports.getAssignmentById = (id) => {
-  //untested, getting errors on 
+  //untested, getting unrelated errors on postman
   return new Promise(async (resolve, reject) => {
     try {
       const assignment = await getAssignment(id)
@@ -130,6 +126,7 @@ exports.getSubmissionsByAssignmentId = (id,page,studentId) => {
  * no response value expected for this operation
  **/
 exports.removeAssignmentsById = (id) => {
+  //untested
   return new Promise(async (resolve, reject) => {
     try{
       const assignmentExist = await Assignment.countDocuments({ _id: id });
@@ -157,8 +154,32 @@ exports.removeAssignmentsById = (id) => {
  * no response value expected for this operation
  **/
 exports.updateAssignmentById = (body,id) => {
-  return new Promise((resolve, reject) =>  {
-    resolve();
+  //untested
+  return new Promise(async(resolve, reject) =>  {
+    try {
+      const assignmentFields = extractValidFields(body, Assignment);
+      const updatedAssignment = await Assignment.findOneAndUpdate(
+        { _id: id },
+        { $set: assignmentFields },
+        { new: true, runValidators: true }
+      );
+      if (!updatedAssignment) {
+        throw new NotFoundError('Course not found.');
+      }
+      const response = {
+        id: updatedAssignment._id,
+        title: updatedAssignment.title,
+        points: updatedAssignment.points,
+        due: updatedAssignment.due,
+        links: {
+          course: `/assignments/${updatedAssignment._id}`
+        }
+      };
+
+      return resolve(response);
+    }
+    catch (error) {
+      return reject(await handleAssignmentError(error));
+    }
   });
 }
-

@@ -31,20 +31,20 @@ module.exports.checkForExistingAssignment = async (body) => {
   }
 }
 
-module.exports.checkForExistingSubmission = async (body) => {
-    try {
-      const existingSubmission = await Assignment.findOne(body);
-      if (existingSubmission) {
-        console.log('Submission already exists.');
-        throw new ConflictError('A Submission with the specified fields already exists.');
-      }
-    } catch (error) {
-      if (error instanceof ConflictError) {
-        throw error;
-      }
-      throw new ValidationError('The request body was either not present or did not contain all the required fields.');
-    }
-  }
+// module.exports.checkForExistingSubmission = async (body) => {
+//     try {
+//       const existingSubmission = await Assignment.findOne(body);
+//       if (existingSubmission) {
+//         console.log('Submission already exists.');
+//         throw new ConflictError('A Submission with the specified fields already exists.');
+//       }
+//     } catch (error) {
+//       if (error instanceof ConflictError) {
+//         throw error;
+//       }
+//       throw new ValidationError('The request body was either not present or did not contain all the required fields.');
+//     }
+//   }
 
 module.exports.checkIfStudentInCourse = async (userId, assignmentId) => {
     try {
@@ -76,10 +76,17 @@ module.exports.createAssignment = async (assignmentFields) => {
   return response;
 }
 
-module.exports.createSubmission = async (submissionFields) => {
+module.exports.createSubmission = async (submissionFields, assignmentId) => {
+    //create new submission and add it to assignment's submission list
+    const existingAssignment = await Assignment.findOne(assignmentId);
+    if (!existingAssignment) {
+        throw new NotFoundError('Assignment not found.');
+      }
+      
     const createdSubmission = await Submission.create(submissionFields);
+    await Assignment.updateOne({ _id: assignmentId }, { $addToSet: {submissions: createdSubmission } });
     const response = {
-      id: createdAssignment._id,
+      id: createdSubmission._id,
     };
     return response;
   }
