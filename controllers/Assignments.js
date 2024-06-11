@@ -6,7 +6,6 @@ const { requireAuth, checkPermissions } = require('../utils/auth.js');
 const { errorHandler }= require('../middleware/errorHandler');
 const { rateLimiter } = require('../utils/ratelimiter.js');
 const { isAdmin, isAdminOrInstructor, isCourseInstructor, isAssignmentInstructor } = require('../helpers/assignmentHelpers.js');
-const { isAssignmentInstructor } = require('../helpers/assignmentHelpers.js');
 
 // Controllers call coresponding services, then passes response to Json writer to create response
 
