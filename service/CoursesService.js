@@ -6,7 +6,7 @@ const { User } = require('../models/user.js');
 const { validateAgainstModel, extractValidFields } = require('../utils/validation.js');
 const { ValidationError, PermissionError, ConflictError, ServerError, NotFoundError} = require('../utils/error.js');
 const { checkForExistingCourse, createCourse, handleCourseError, calculatePagination, generatePaginatedCourseLinks, mapCourses } = require('../helpers/courseHelpers.js');
-
+const { createCsvStringifier } = require('csv-writer');
 
 
 /**
@@ -185,32 +185,32 @@ exports.getCourseById = (id) => {
 
 exports.getRosterByCourseId = (id) => {
   return new Promise(async (resolve, reject) => {
-    //Unfinished
     try{
-      const courseExist = await Course.countDocuments({id: id }).count().exec(); //ensure id exists
-      if (courseExist != 1){
-        throw new NotFoundError('Course not found.');
+      const course = await Course.findById(id);
+      if (!course || course.students.length == 0){
+        throw new NotFoundError('No students found in course.');
       }
+
+      const students = course.students.map(student => {
+        return {
+          name: student.name,
+          id: student.id,
+          email: student.email
+        }
+      });
+
+      const csvHeaders = ['Name', 'ID', 'Email'];
+      csvWriter.
+      
+
+      console.log(courseExist)
       //find all students related to course
-      const foundStudents = await User.find({courseId: id, role: "student"})
 
       //LOGIC TO LOOP THROUGH AND ADD THEM TO CSV FILE HERE
     }
     catch (error) {
-      console.log(error)
-      if (!(error instanceof ServerError)) {
-        return reject(new ServerError('An error occurred while creating a new User.'));
-      }
-      return reject(error);
+      return reject(await handleCourseError(error));
     }
-    //example kept for testing purposes
-    // var examples = {};
-    // examples['application/json'] = "123,\"Jane Doe\",doej@oregonstate.edu\n...\n";
-    // if (Object.keys(examples).length > 0) {
-    //   resolve(examples[Object.keys(examples)[0]]);
-    // } else {
-    //   resolve();
-    // }
   });
 }
 
