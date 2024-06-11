@@ -96,6 +96,29 @@ module.exports.getCourseObjectById = async (id) => {
   }
 }
 
+module.exports.getRosterCsvStream = async (course, studentData) => {
+  try {
+      const csvHeaders = [
+        { id: 'id', title: 'ID' },
+        { id: 'name', title: 'Name' },
+        { id: 'email', title: 'Email' }
+      ];
+
+      const csvStringifier = createObjectCsvStringifier({ header: csvHeaders });
+
+      res.setHeader('Content-Type', 'text/csv');
+      res.attachment(`${course.term}-${course.title}-roster.csv`);
+
+      const csvContent = csvStringifier.getHeaderString() + csvStringifier.stringifyRecords(studentData);
+      const csvStream = new Readable();
+      csvStream.push(csvContent);
+      csvStream.push(null)
+      return csvStream;
+  } catch (error) {
+    return new ServerError('An unexpected error occurred.');
+  }
+}
+
 module.exports.getStudentDataByIds = async (studentIds) => {
   try {
     const students = await User.find({ _id: { $in: studentIds } });
