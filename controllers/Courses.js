@@ -70,13 +70,16 @@ module.exports.getRosterByCourseId = function getRosterByCourseId (req, res, nex
 };
 
 module.exports.getStudentsByCourseId = function getStudentsByCourseId (req, res, next, id) {
-  Courses.getStudentsByCourseId(id)
-    .then(function (response) {
+  rateLimiter(req, res, next)
+    .then(() => requireAuth(req, res, next))
+    .then(() => isCourseInstructor(req.auth_role, req.user_id, id))
+    .then(() => Courses.getStudentsByCourseId(id))
+    .then((response) => {
       utils.writeJson(res, response);
     })
-    .catch(function (response) {
-      utils.writeJson(res, response);
-    });
+    .catch((error) => {
+      errorHandler(res, error);
+    })
 };
 
 module.exports.removeCourseById = function removeCourseById (req, res, next, id) {
