@@ -94,12 +94,15 @@ module.exports.removeCourseById = function removeCourseById (req, res, next, id)
 };
 
 module.exports.updateCourseById = function updateCourseById (req, res, next, body, id) {
-  Courses.updateCourseById(body, id)
-    .then(function (response) {
+  rateLimiter(req, res, next)
+    .then(() => requireAuth(req, res, next))
+    .then(() => isCourseInstructor(req.auth_role, req.user_id, id))
+    .then(() => Courses.updateCourseById(body, id))
+    .then((response) => {
       utils.writeJson(res, response);
     })
-    .catch(function (response) {
-      utils.writeJson(res, response);
+    .catch((error) => {
+      errorHandler(res, error);
     });
 };
 
