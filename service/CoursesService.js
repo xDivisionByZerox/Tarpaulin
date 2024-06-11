@@ -118,27 +118,6 @@ exports.getAssignmentsByCourseId = (id) => {
       }
       return reject(error);
     }
-
-// Keeping around just in case
-//     var examples = {};
-//     examples['application/json'] = {
-//   "assignments" : [ {
-//     "due" : "2022-06-14T17:00:00-07:00",
-//     "title" : "Assignment 3",
-//     "courseId" : "123",
-//     "points" : 100
-//   }, {
-//     "due" : "2022-06-14T17:00:00-07:00",
-//     "title" : "Assignment 3",
-//     "courseId" : "123",
-//     "points" : 100
-//   } ]
-// };
-//     if (Object.keys(examples).length > 0) {
-//       resolve(examples[Object.keys(examples)[0]]);
-//     } else {
-//       resolve();
-//     }
   });
 }
 
