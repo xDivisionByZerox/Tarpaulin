@@ -1,5 +1,8 @@
-const { PermissionError, ConflictError, ServerError, ValidationError } = require('../utils/error.js');
+const { PermissionError, ConflictError, ServerError, ValidationError, NotFoundError } = require('../utils/error.js');
 const { Course } = require('../models/course.js');
+const { createObjectCsvStringifier } = require('csv-writer');
+const { Readable } = require('stream');
+const { User } = require('../models/user.js');
 
 module.exports.isCourseInstructor = (auth_role, user_id, course_id) => {
   return new Promise(async (resolve, reject) => {
@@ -96,26 +99,26 @@ module.exports.getCourseObjectById = async (id) => {
   }
 }
 
-module.exports.getRosterCsvStream = async (course, studentData) => {
+module.exports.createAndStreamRoster = async (res, course, studentData) => {
   try {
-      const csvHeaders = [
-        { id: 'id', title: 'ID' },
-        { id: 'name', title: 'Name' },
-        { id: 'email', title: 'Email' }
-      ];
+    const csvHeaders = [
+      { id: 'id', title: 'ID' },
+      { id: 'name', title: 'Name' },
+      { id: 'email', title: 'Email' }
+    ];
 
-      const csvStringifier = createObjectCsvStringifier({ header: csvHeaders });
+    const csvStringifier = createObjectCsvStringifier({ header: csvHeaders });
 
-      res.setHeader('Content-Type', 'text/csv');
-      res.attachment(`${course.term}-${course.title}-roster.csv`);
+    res.setHeader('Content-Type', 'text/csv');
+    res.attachment(`${course.term}-${course.title}-roster.csv`);
 
-      const csvContent = csvStringifier.getHeaderString() + csvStringifier.stringifyRecords(studentData);
-      const csvStream = new Readable();
-      csvStream.push(csvContent);
-      csvStream.push(null)
-      return csvStream;
+    const csvContent = csvStringifier.getHeaderString() + csvStringifier.stringifyRecords(studentData);
+    const csvStream = new Readable();
+    csvStream.push(csvContent);
+    csvStream.push(null)
+    csvStream.pipe(res).on('finish', () => Promise.resolve());
   } catch (error) {
-    return new ServerError('An unexpected error occurred.');
+    return error;
   }
 }
 
@@ -127,7 +130,7 @@ module.exports.getStudentDataByIds = async (studentIds) => {
     }
     return students;
   } catch (error) {
-    return new NotFoundError('Students not found.');
+    return error;
   }
 }
 
