@@ -96,7 +96,17 @@ module.exports.getCourseObjectById = async (id) => {
   }
 }
 
-
+module.exports.getStudentDataByIds = async (studentIds) => {
+  try {
+    const students = await User.find({ _id: { $in: studentIds } });
+    if (!students || students.length == 0) {
+      throw new NotFoundError('Students not found.');
+    }
+    return students;
+  } catch (error) {
+    return new NotFoundError('Students not found.');
+  }
+}
 
 module.exports.calculatePagination = (page, numPerPage, totalItems) => {
   const coursePage = parseInt(page) || 1;
