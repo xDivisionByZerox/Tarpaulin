@@ -339,19 +339,27 @@ exports.updateCourseById = (body,id) => {
 exports.updateEnrollmentByCourseId = (body,id) => {
   return new Promise(async (resolve, reject) => {
     try {
+      if (!body.add && !body.remove) {
+        throw new ValidationError('The request body was either not present or did not contain all the required fields.');
+      }
+
       const course = await Course.findById(id);
       if (!course){
         throw new NotFoundError('Course not found.');
       }
 
-      for (let studentId of body.add) {
-        await Course.updateOne({ _id: id }, { $addToSet: { students: studentId } });
-        await User.updateOne({ _id: studentId }, { $addToSet: { courses: id } });
+      if (!!body.add) {
+        for (let studentId of body.add) {
+          await Course.updateOne({ _id: id }, { $addToSet: { students: studentId } });
+          await User.updateOne({ _id: studentId }, { $addToSet: { courses: id } });
+        }
       }
 
-      for (let studentId of body.remove) {
-        await Course.updateOne({ _id: id }, { $pull: { students: studentId } });
-        await User.updateOne({ _id: studentId }, { $pull: { courses: id } });
+      if (!!body.remove) {
+        for (let studentId of body.remove) {
+          await Course.updateOne({ _id: id }, { $pull: { students: studentId } });
+          await User.updateOne({ _id: studentId }, { $pull: { courses: id } });
+        }
       }
 
       const response = {
