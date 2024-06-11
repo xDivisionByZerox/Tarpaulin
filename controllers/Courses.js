@@ -5,7 +5,7 @@ var Courses = require('../service/CoursesService');
 const { requireAuth, checkPermissions } = require('../utils/auth.js');
 const { errorHandler }= require('../middleware/errorHandler');
 const { rateLimiter } = require('../utils/ratelimiter.js');
-const { isAdmin } = require('../helpers/courseHelpers.js');
+const { isAdmin, isCourseInstructor } = require('../helpers/courseHelpers.js');
 // Controllers call coresponding services, then passes response to Json writer to create response
 
 module.exports.createCourse = function createCourse (req, res, next, body) {
@@ -57,13 +57,16 @@ module.exports.getCourseById = function getCourseById (req, res, next, id) {
 };
 
 module.exports.getRosterByCourseId = function getRosterByCourseId (req, res, next, id) {
-  Courses.getRosterByCourseId(id)
-    .then(function (response) {
+  rateLimiter(req, res, next)
+    .then(() => requireAuth(req, res, next))
+    .then(() => isCourseInstructor(req.auth_role, req.user_id, id))
+    .then(() => Courses.getRosterByCourseId(id, res))
+    .then((response) => {
       utils.writeJson(res, response);
     })
-    .catch(function (response) {
-      utils.writeJson(res, response);
-    });
+    .catch((error) => {
+      errorHandler(res, error);
+    })
 };
 
 module.exports.getStudentsByCourseId = function getStudentsByCourseId (req, res, next, id) {
