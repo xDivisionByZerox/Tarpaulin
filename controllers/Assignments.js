@@ -2,6 +2,10 @@
 
 var utils = require('../utils/writer.js');
 var Assignments = require('../service/AssignmentsService');
+const { errorHandler }= require('../middleware/errorHandler');
+const { rateLimiter } = require('../utils/ratelimiter.js');
+const { isAssignmentInstructor } = require('../helpers/assignmentHelpers.js');
+const { requireAuth, checkPermissions } = require('../utils/auth.js');
 
 // Controllers call coresponding services, then passes response to Json writer to create response
 
@@ -37,13 +41,17 @@ module.exports.getAssignmentById = function getAssignmentById (req, res, next, i
 };
 
 module.exports.getSubmissionsByAssignmentId = function getSubmissionsByAssignmentId (req, res, next, id, page, studentId) {
-  Assignments.getSubmissionsByAssignmentId(id, page, studentId)
-    .then(function (response) {
+  rateLimiter(req, res, next)
+    .then(() => requireAuth(req, res, next))
+    .then(() => checkPermissions(req, res, next))
+    .then(() => isAssignmentInstructor(req.auth_role, req.user_id, id))
+    .then(()=> Assignments.getSubmissionsByAssignmentId(id, page, studentId))
+    .then((response) => {
       utils.writeJson(res, response);
     })
-    .catch(function (response) {
-      utils.writeJson(res, response);
-    });
+    .catch((error) => {
+      errorHandler(res, error);
+    })
 };
 
 module.exports.removeAssignmentsById = function removeAssignmentsById (req, res, next, id) {
