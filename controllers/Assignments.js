@@ -10,6 +10,7 @@ const { isAdmin, isAdminOrInstructor, isCourseInstructor, isAssignmentInstructor
 // Controllers call coresponding services, then passes response to Json writer to create response
 
 module.exports.createAssignment = function createAssignment (req, res, next, body) {
+  console.log('createAssignment');
   rateLimiter(req, res, next)
   .then(() => requireAuth(req, res, next))
   .then(() => checkPermissions(req, res, next))
@@ -41,7 +42,7 @@ module.exports.getAssignmentById = function getAssignmentById (req, res, next, i
     rateLimiter(req, res, next)
     .then(() => requireAuth(req, res, next))
     .then(() => checkPermissions(req, res, next))
-    .then(() => Assignments.getAssignmentById(body, id))
+    .then(() => Assignments.getAssignmentById(id))
     .then((response) => {
       utils.writeJson(res, response);
     })
@@ -54,7 +55,7 @@ module.exports.getSubmissionsByAssignmentId = function getSubmissionsByAssignmen
     rateLimiter(req, res, next)
     .then(() => requireAuth(req, res, next))
     .then(() => checkPermissions(req, res, next))
-    .then(() => isCourseInstructor(req.auth_role, req.user_id, body.courseId))
+    .then(() => isCourseInstructor(req.auth_role, req.user_id, req.courseId))
     .then(() => Assignments.getSubmissionsByAssignmentId(body, id, page, studentId))
     .then((response) => {
       utils.writeJson(res, response);
@@ -69,7 +70,7 @@ module.exports.removeAssignmentsById = function removeAssignmentsById (req, res,
     .then(() => requireAuth(req, res, next))
     .then(() => checkPermissions(req, res, next))
     // .then(() => isCourseInstructor(req.auth_role, req.user_id, body.courseId))
-    .then(() => Assignments.removeAssignmentsById(body, id))
+    .then(() => Assignments.removeAssignmentsById(id))
     .then((response) => {
       utils.writeJson(res, response);
     })
@@ -90,5 +91,4 @@ module.exports.updateAssignmentById = function updateAssignmentById (req, res, n
     .catch((error) => {
       errorHandler(res, error);
     });
-
 };
