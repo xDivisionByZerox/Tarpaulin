@@ -110,11 +110,14 @@ module.exports.updateCourseById = function updateCourseById (req, res, next, bod
 };
 
 module.exports.updateEnrollmentByCourseId = function updateEnrollmentByCourseId (req, res, next, body, id) {
-  Courses.updateEnrollmentByCourseId(body, id)
-    .then(function (response) {
+  rateLimiter(req, res, next)
+    .then(() => requireAuth(req, res, next))
+    .then(() => isCourseInstructor(req.auth_role, req.user_id, id))
+    .then(() => Courses.updateEnrollmentByCourseId(body, id))
+    .then((response) => {
       utils.writeJson(res, response);
     })
-    .catch(function (response) {
-      utils.writeJson(res, response);
+    .catch((error) => {
+      errorHandler(res, error);
     });
 };
