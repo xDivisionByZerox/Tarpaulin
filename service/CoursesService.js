@@ -338,29 +338,31 @@ exports.updateCourseById = (body,id) => {
 
 exports.updateEnrollmentByCourseId = (body,id) => {
   return new Promise(async (resolve, reject) => {
-    //Untested
-    try{
+    try {
       const course = await Course.findById(id);
       if (!course){
         throw new NotFoundError('Course not found.');
       }
 
-
-
-
-      for (let i = 0; i < body["add"].length; i++) {
-        //add user onto courses students array(push operator?)
-        await Course.updateOne({_id: id}, {$push: {students: body["add"][i].push}})
-        //add course to student courses array
-        await User.updateOne({_id: body["add"][i]}, {$push: {courses: body["add"][i]}})
+      for (let studentId of body.add) {
+        await Course.updateOne({ _id: id }, { $addToSet: { students: studentId } });
+        await User.updateOne({ _id: studentId }, { $addToSet: { courses: id } });
       }
-      for (let i = 0; i < body["remove"].length; i++) {
-        //remove user onto courses students array(push operator?)
-        await Course.updateOne({_id: id}, {$pull: {students: body["add"][i].push}})
-        //remove course to student courses array
-        await User.updateOne({_id: body["add"][i]}, {$push: {courses: body["add"][i]}})
-      } 
-      resolve();
+
+      for (let studentId of body.remove) {
+        await Course.updateOne({ _id: id }, { $pull: { students: studentId } });
+        await User.updateOne({ _id: studentId }, { $pull: { courses: id } });
+      }
+
+      const response = {
+        message: 'Enrollment updated successfully.',
+        links: {
+          course: `/courses/${id}`
+        }
+      };
+
+
+      return resolve(response);
     }
     catch (error) {
       return reject(await handleCourseError(error));
