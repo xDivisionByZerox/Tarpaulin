@@ -236,26 +236,22 @@ exports.getRosterByCourseId = (id, res) => {
 
 exports.getStudentsByCourseId = (id) => {
   return new Promise(async (resolve, reject) => {
-    //Unfinished
-    try{
-      const courseExist = await Course.countDocuments({id: id }).count().exec(); //ensure id exists
-      if (courseExist != 1){
+    try {
+
+      const course = await Course.findById(id);
+      if (!course){
         throw new NotFoundError('Course not found.');
       }
-      const foundStudents = await User.find({courseId: id, role: "student"})
 
       const response = {
         courseId: id,
-        students: foundStudents
+        students: course.students
       };
+
       return resolve(response);
     }
     catch (error) {
-      console.log(error)
-      if (!(error instanceof ServerError)) {
-        return reject(new ServerError('An error occurred while creating a new User.'));
-      }
-      return reject(error);
+      return reject(await handleCourseError(error));
     }
   });
 }
@@ -271,7 +267,6 @@ exports.getStudentsByCourseId = (id) => {
 
 exports.removeCourseById = (id) => {
   return new Promise(async (resolve, reject) => {
-    //Untested
     try{
       const courseExist = await Course.countDocuments({ _id: id });
 
