@@ -340,41 +340,30 @@ exports.updateEnrollmentByCourseId = (body,id) => {
   return new Promise(async (resolve, reject) => {
     //Untested
     try{
-      //NEEDS TO UPDATE TO HAVE AUTHORIZATION AS RELEVANT INSTRUCTOR OR ADMIN
-      const courseExist = await Course.countDocuments({_id: id }).count().exec(); //ensure id exists
-      if (courseExist != 1){
+      const course = await Course.findById(id);
+      if (!course){
         throw new NotFoundError('Course not found.');
       }
-      const {role, auth_role} = body;
-      if (typeof(role) != 'string' || typeof(auth_role) != 'string') {
-        throw new ValidationError('The request body was either not present or did not contain a valid User object.');
-      }
-      if (auth_role != 'admin' || (auth_role != 'instructor')) { //difference between role and auth_role?
-        throw new PermissionError('The request was not authorized.');
-      }
+
 
 
 
       for (let i = 0; i < body["add"].length; i++) {
         //add user onto courses students array(push operator?)
-        await Courses.updateOne({_id: id}, {$push: {students: body["add"][i].push}})
+        await Course.updateOne({_id: id}, {$push: {students: body["add"][i].push}})
         //add course to student courses array
         await User.updateOne({_id: body["add"][i]}, {$push: {courses: body["add"][i]}})
       }
       for (let i = 0; i < body["remove"].length; i++) {
         //remove user onto courses students array(push operator?)
-        await Courses.updateOne({_id: id}, {$pull: {students: body["add"][i].push}})
+        await Course.updateOne({_id: id}, {$pull: {students: body["add"][i].push}})
         //remove course to student courses array
         await User.updateOne({_id: body["add"][i]}, {$push: {courses: body["add"][i]}})
       } 
       resolve();
     }
     catch (error) {
-      console.log(error)
-      if (!(error instanceof ServerError)) {
-        return reject(new ServerError('An error occurred while creating a new User.'));
-      }
-      return reject(error);
+      return reject(await handleCourseError(error));
     }
   });
 }
