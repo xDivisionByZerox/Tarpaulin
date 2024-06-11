@@ -248,7 +248,7 @@ exports.getStudentsByCourseId = (id) => {
         courseId: id,
         students: foundStudents
       };
-      resolve(response);
+      return resolve(response);
     }
     catch (error) {
       console.log(error)
@@ -257,26 +257,6 @@ exports.getStudentsByCourseId = (id) => {
       }
       return reject(error);
     }
-    //keeping for testing purposes
-//     var examples = {};
-//     examples['application/json'] = {
-//   "students" : [ {
-//     "password" : "hunter2",
-//     "role" : "student",
-//     "name" : "Jane Doe",
-//     "email" : "doej@oregonstate.edu"
-//   }, {
-//     "password" : "hunter2",
-//     "role" : "student",
-//     "name" : "Jane Doe",
-//     "email" : "doej@oregonstate.edu"
-//   } ]
-// };
-//     if (Object.keys(examples).length > 0) {
-//       resolve(examples[Object.keys(examples)[0]]);
-//     } else {
-//       resolve();
-//     }
   });
 }
 
@@ -342,7 +322,7 @@ exports.updateCourseById = (body,id) => {
         }
       };
 
-      resolve(response);
+      return resolve(response);
     }
     catch (error) {
       return reject(await handleCourseError(error));
