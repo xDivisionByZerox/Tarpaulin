@@ -144,7 +144,7 @@ exports.getCourseById = (id) => {
 
 exports.getRosterByCourseId = (id, res) => {
   return new Promise(async (resolve, reject) => {
-    try{
+    try {
       const course = await getCourseObjectById(id);
       const studentData = await getStudentDataByIds(course.students);
 

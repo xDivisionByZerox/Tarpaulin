@@ -25,6 +25,7 @@ module.exports.createCourse = function createCourse (req, res, next, body) {
 module.exports.getAllCourses = function getAllCourses (req, res, next, page, subject, number, term) {
   rateLimiter(req, res, next)
     .then(() => requireAuth(req, res, next))
+    .then(() => checkPermissions(req, res, next))
     .then(() => Courses.getAllCourses(page, subject, number, term))
     .then((response) => {
       utils.writeJson(res, response);
@@ -37,6 +38,7 @@ module.exports.getAllCourses = function getAllCourses (req, res, next, page, sub
 module.exports.getAssignmentsByCourseId = function getAssignmentsByCourseId (req, res, next, id) {
   rateLimiter(req, res, next)
     .then(() => requireAuth(req, res, next))
+    .then(() => checkPermissions(req, res, next))
     .then(() => isCourseInstructor(req.auth_role, req.user_id, id))
     .then(() => Courses.getAssignmentsByCourseId(id))
     .then((response) => {
@@ -50,6 +52,7 @@ module.exports.getAssignmentsByCourseId = function getAssignmentsByCourseId (req
 module.exports.getCourseById = function getCourseById (req, res, next, id) {
   rateLimiter(req, res, next)
     .then(() => requireAuth(req, res, next))
+    .then(() => checkPermissions(req, res, next))
     .then(() => Courses.getCourseById(id))
     .then((response) => {
       utils.writeJson(res, response);
@@ -62,6 +65,7 @@ module.exports.getCourseById = function getCourseById (req, res, next, id) {
 module.exports.getRosterByCourseId = function getRosterByCourseId (req, res, next, id) {
   rateLimiter(req, res, next)
     .then(() => requireAuth(req, res, next))
+    .then(() => checkPermissions(req, res, next))
     .then(() => isCourseInstructor(req.auth_role, req.user_id, id))
     .then(() => Courses.getRosterByCourseId(id, res))
     .catch((error) => {
@@ -72,6 +76,7 @@ module.exports.getRosterByCourseId = function getRosterByCourseId (req, res, nex
 module.exports.getStudentsByCourseId = function getStudentsByCourseId (req, res, next, id) {
   rateLimiter(req, res, next)
     .then(() => requireAuth(req, res, next))
+    .then(() => checkPermissions(req, res, next))
     .then(() => isCourseInstructor(req.auth_role, req.user_id, id))
     .then(() => Courses.getStudentsByCourseId(id))
     .then((response) => {
@@ -99,6 +104,7 @@ module.exports.removeCourseById = function removeCourseById (req, res, next, id)
 module.exports.updateCourseById = function updateCourseById (req, res, next, body, id) {
   rateLimiter(req, res, next)
     .then(() => requireAuth(req, res, next))
+    .then(() => checkPermissions(req, res, next))
     .then(() => isCourseInstructor(req.auth_role, req.user_id, id))
     .then(() => Courses.updateCourseById(body, id))
     .then((response) => {
@@ -112,6 +118,7 @@ module.exports.updateCourseById = function updateCourseById (req, res, next, bod
 module.exports.updateEnrollmentByCourseId = function updateEnrollmentByCourseId (req, res, next, body, id) {
   rateLimiter(req, res, next)
     .then(() => requireAuth(req, res, next))
+    .then(() => checkPermissions(req, res, next))
     .then(() => isCourseInstructor(req.auth_role, req.user_id, id))
     .then(() => Courses.updateEnrollmentByCourseId(body, id))
     .then((response) => {
