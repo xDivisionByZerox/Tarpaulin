@@ -1,6 +1,6 @@
 'use strict';
 
-const { checkForExistingAssignment, isInstructorOrAdminAssignment, createAssignment, getAssignment, handleAssignmentError, checkForExistingSubmission } = require("../helpers/assignmentHelpers");
+const { checkForExistingAssignment, isInstructorOrAdminAssignment, createAssignment, getAssignment, handleAssignmentError, checkForExistingSubmission, calculatePagination, generatePaginatedSubmissionLinks } = require("../helpers/assignmentHelpers");
 const { Assignment } = require("../models/assignment");
 const { Submission } = require("../models/submission");
 
@@ -91,28 +91,43 @@ exports.getAssignmentById = (id) => {
  * studentId studentId Fetch assignments only for the specified student ID.  Exact type/format will depend on your implementation but will likely be either an integer or a string.  (optional)
  * returns inline_response_200_4
  **/
-exports.getSubmissionsByAssignmentId = (id,page,studentId) => {
-  return new Promise((resolve, reject) => {
-    var examples = {};
-    examples['application/json'] = {
-  "submissions" : [ {
-    "studentId" : "123",
-    "file" : "file",
-    "grade" : 94.5,
-    "assignmentId" : "123",
-    "timestamp" : "2022-06-14T17:00:00-07:00"
-  }, {
-    "studentId" : "123",
-    "file" : "file",
-    "grade" : 94.5,
-    "assignmentId" : "123",
-    "timestamp" : "2022-06-14T17:00:00-07:00"
-  } ]
-};
-    if (Object.keys(examples).length > 0) {
-      resolve(examples[Object.keys(examples)[0]]);
-    } else {
-      resolve();
+exports.getSubmissionsByAssignmentId = (id, page, studentId) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const numPerPage = 10;
+      const lengthOfSubmissions = await Submission.count({assignmentId: id, studentId: studentId});
+
+
+      const { pageNumber, skip, lastPage } = calculatePagination(page, numPerPage, lengthOfSubmissions);
+
+      const pageSubmissions = await Submission.find({assignmentId: id, studentId: studentId})
+        .skip(skip)
+        .limit(numPerPage);
+    
+      const links = generatePaginatedSubmissionLinks(pageNumber, lastPage, id, studentId);
+      const submissions = pageSubmissions.map((submission) => {
+        return {
+          id: submission._id,
+          assignmentId: submission.assignmentId,
+          studentId: submission.studentId,
+          timestamp: submission.timestamp,
+          grade: submission.grade,
+          file: submission.file
+        }
+      })
+    
+      const response = {
+        submissions: submissions,
+        pageNumber: pageNumber,
+        totalPages: lastPage,
+        pageSize: numPerPage,
+        totalCount: lengthOfSubmissions,
+        links: links
+      }
+
+      return resolve(response);
+    } catch (error) {
+      return reject(await handleAssignmentError(error));
     }
   });
 }
