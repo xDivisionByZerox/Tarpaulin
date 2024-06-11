@@ -183,7 +183,7 @@ exports.getCourseById = (id) => {
  * returns String
  **/
 
-exports.getRosterByCourseId = (id) => {
+exports.getRosterByCourseId = (id, res) => {
   return new Promise(async (resolve, reject) => {
     try{
       const course = await Course.findById(id);
@@ -198,15 +198,26 @@ exports.getRosterByCourseId = (id) => {
           email: student.email
         }
       });
+      const csvHeaders = [
+        { id: 'id', title: 'ID' },
+        { id: 'name', title: 'Name' },
+        { id: 'email', title: 'Email' }
+      ];
 
-      const csvHeaders = ['Name', 'ID', 'Email'];
-      csvWriter.
-      
+      // Create CSV stringifier
+      const csvStringifier = createCsvStringifier({ header: csvHeaders });
 
-      console.log(courseExist)
-      //find all students related to course
+      res.setHeader('Content-Type', 'text/csv');
+      res.attachment(`${course.term}-${course.title}-roster.csv`);
 
-      //LOGIC TO LOOP THROUGH AND ADD THEM TO CSV FILE HERE
+      // Pipe CSV data to the response stream
+      const csvContent = csvStringifier.getHeaderString() + csvStringifier.stringifyRecords(students);
+      const csvStream = new Readable();
+      csvStream.push(csvContent);
+      csvStream.push(null)
+      csvStream.pipe(res);
+
+      return resolve();
     }
     catch (error) {
       return reject(await handleCourseError(error));
