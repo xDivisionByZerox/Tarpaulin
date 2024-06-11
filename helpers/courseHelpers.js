@@ -61,6 +61,27 @@ module.exports.createCourse = async (courseFields) => {
   }
 }
 
+module.exports.updateEnrollmentForCourseId = async (id, body) => {
+  try {
+      if (!!body.add) {
+        for (let studentId of body.add) {
+          await Course.updateOne({ _id: id }, { $addToSet: { students: studentId } });
+          await User.updateOne({ _id: studentId }, { $addToSet: { courses: id } });
+        }
+      }
+
+      if (!!body.remove) {
+        for (let studentId of body.remove) {
+          await Course.updateOne({ _id: id }, { $pull: { students: studentId } });
+          await User.updateOne({ _id: studentId }, { $pull: { courses: id } });
+        }
+      }
+  } catch (error) {
+    return new NotFoundError('Course not found.');
+  }
+}
+
+
 module.exports.generatePaginatedCourseLinks = (pageNumber, lastPage) => {
   const links = {};
   if (pageNumber < lastPage) {
