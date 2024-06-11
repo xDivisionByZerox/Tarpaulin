@@ -35,12 +35,15 @@ module.exports.getAllCourses = function getAllCourses (req, res, next, page, sub
 };
 
 module.exports.getAssignmentsByCourseId = function getAssignmentsByCourseId (req, res, next, id) {
-  Courses.getAssignmentsByCourseId(id)
-    .then(function (response) {
+  rateLimiter(req, res, next)
+    .then(() => requireAuth(req, res, next))
+    .then(() => isCourseInstructor(req.auth_role, req.user_id, id))
+    .then(() => Courses.getAssignmentsByCourseId(id))
+    .then((response) => {
       utils.writeJson(res, response);
     })
-    .catch(function (response) {
-      utils.writeJson(res, response);
+    .catch((error) => {
+      errorHandler(res, error);
     });
 };
 
