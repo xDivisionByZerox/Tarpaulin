@@ -5,7 +5,8 @@ var Assignments = require('../service/AssignmentsService');
 const { requireAuth, checkPermissions } = require('../utils/auth.js');
 const { errorHandler }= require('../middleware/errorHandler');
 const { rateLimiter } = require('../utils/ratelimiter.js');
-const { isAdmin, isAdminOrInstructor, isCourseInstructor } = require('../helpers/assignmentHelpers.js');
+const { isAdmin, isAdminOrInstructor, isCourseInstructor, isAssignmentInstructor } = require('../helpers/assignmentHelpers.js');
+const { isAssignmentInstructor } = require('../helpers/assignmentHelpers.js');
 
 // Controllers call coresponding services, then passes response to Json writer to create response
 
@@ -54,7 +55,7 @@ module.exports.getSubmissionsByAssignmentId = function getSubmissionsByAssignmen
     rateLimiter(req, res, next)
     .then(() => requireAuth(req, res, next))
     .then(() => checkPermissions(req, res, next))
-    //.then(() => isCourseInstructor(req.auth_role, req.user_id, body.courseId))
+    .then(() => isCourseInstructor(req.auth_role, req.user_id, body.courseId))
     .then(() => Assignments.getSubmissionsByAssignmentId(body, id, page, studentId))
     .then((response) => {
       utils.writeJson(res, response);
