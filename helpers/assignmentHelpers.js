@@ -35,6 +35,19 @@ module.exports.isAssignmentInstructor = (auth_role, user_id, assignment_id) => {
   })
 }
 
+module.exports.generatePaginatedAssignmentLinks = (pageNumber, lastPage, assignment_id, student_id) => {
+  const links = {};
+  if (pageNumber < lastPage) {
+    links.nextPage = `/assignments/${assignment_id}/submissions/?page=${pageNumber + 1}&studentId=${student_id}`;
+    links.lastPage = `/assignments/${assignment_id}/submissions/?page=${lastPage}&studentId=${student_id}`;
+  }
+  if (pageNumber > 1) {
+    links.prevPage = `/assignments/${assignment_id}/submissions/?page=${pageNumber - 1}&studentId=${student_id}`;
+    links.firstPage = `/assignments/${assignment_id}/submissions/?page=1&studentId=${student_id}`;
+  }
+  return links;
+}
+
 module.exports.calculatePagination = (page, numPerPage, totalItems) => {
   const coursePage = parseInt(page) || 1;
   const lastPage = Math.ceil(totalItems / numPerPage);
