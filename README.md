@@ -37,7 +37,7 @@ Represents a single student submission for an assignment, tied to the submitting
     "abc123","Jane Doe","doej@oregonstate.edu"
     "def456","Luke Skywalker","skywallu@oregonstate.edu"
     ```
-- **Implementation**: The roster can be generated on-the-fly from the database or pre-generated when course enrollment updates occur.
+- **Implementation**: The roster is generated on-the-fly from the database
 
 ### Assignment Submission Creation
 
@@ -59,7 +59,7 @@ Represents a single student submission for an assignment, tied to the submitting
 
 ## Pagination
 
-The following endpoints must support pagination:
+The following endpoints support pagination:
 
 - `GET /courses`
 - `GET /assignments/{id}/submissions`
@@ -70,7 +70,7 @@ Many endpoints require authorization, implemented using a JWT-based authorizatio
 
 ## Docker Specification
 
-Your API application should include a complete Docker specification, allowing it to be launched from scratch on a new machine using Docker Compose. This includes:
+The API application includes a complete Docker specification, allowing it to be launched from scratch on a new machine using Docker Compose. This includes:
 
 - **Dockerfile**: Specifies dependencies for the main API server.
 - **Docker Compose**: Specifies each service in the API (e.g., database) and their interactions.
@@ -92,16 +92,6 @@ The specification should enable launching the API from scratch, including necess
 
 3. **Access the API**:
     - The API will be accessible at `http://localhost:<port>`.
-
-## Contributing
-
-Contributions to this project are welcome. Please follow the guidelines below:
-
-1. **Fork the repository**.
-2. **Create a new branch** (`git checkout -b feature/your-feature`).
-3. **Commit your changes** (`git commit -am 'Add new feature'`).
-4. **Push to the branch** (`git push origin feature/your-feature`).
-5. **Create a new Pull Request**.
 
 ## License
 
