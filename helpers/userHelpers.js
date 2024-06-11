@@ -16,9 +16,6 @@ module.exports.getUserCourses = async (id) => {
 
   const courses = existingUser.courses;
 
-  if (!courses || courses.length == 0) {
-    throw new NotFoundError('Specified user has no courses.');
-  }
   return courses;
 }
 

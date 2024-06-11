@@ -1,4 +1,4 @@
-const {ServerError} = require('../utils/error.js');
+const { ServerError } = require('../utils/error.js');
 
 module.exports.errorHandler = (res, err) => {
   console.error('Error handler received:\n', err);

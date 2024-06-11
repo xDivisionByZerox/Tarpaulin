@@ -1,13 +1,9 @@
 'use strict';
 
 const { Course } = require('../models/course.js');
-const { Assignment } = require('../models/assignment.js');
-const { User } = require('../models/user.js');
 const { validateAgainstModel, extractValidFields } = require('../utils/validation.js');
-const { ValidationError, PermissionError, ConflictError, ServerError, NotFoundError} = require('../utils/error.js');
-const { checkForExistingCourse, createCourse, handleCourseError } = require('../helpers/courseHelpers.js');
-
-
+const { ValidationError, NotFoundError} = require('../utils/error.js');
+const { checkForExistingCourse, createCourse, handleCourseError, calculatePagination, generatePaginatedCourseLinks, mapCourses, getCourseObjectById, getStudentDataByIds, createAndStreamRoster, updateEnrollmentForCourseId } = require('../helpers/courseHelpers.js');
 
 /**
  * Create a new course.
@@ -45,55 +41,35 @@ exports.createCourse = (body) => {
  * returns inline_response_200_1
  **/
 
-exports.getAllCourses = (page,subject,number,term) => {
+exports.getAllCourses = (page, subject, number, term) => {
   //unfinished
   return new Promise(async (resolve, reject) => {
-    try{
-      let coursePage = parseInt(page) || 1;
+    try {
       const numPerPage = 10;
-      lengthOfCourses = await Course.countDocuments({}).count().exec()
-      const lastPage = Math.ceil(lengthOfCourses / numPerPage);
-      coursePage = coursePage > lastPage ? lastPage : coursePage;
-      coursePage = coursePage < 1 ? 1 : coursePage;
+      const lengthOfCourses = await Course.countDocuments({});
+
+      const { pageNumber, skip, lastPage } = calculatePagination(page, numPerPage, lengthOfCourses);
+
+      const pageCourses = await Course.find({})
+        .skip(skip)
+        .limit(numPerPage);
     
-      /*
-       * Calculate starting and ending indices of courses on requested page and
-       * slice out the corresponsing sub-array of courses.
-       */
-      const start = (coursePage - 1) * numPerPage;
-      const end = start + numPerPage;
-      const pageBusinesses = Business.slice(start, end); //???
+      const links = generatePaginatedCourseLinks(pageNumber, lastPage);
+      const courses = mapCourses(pageCourses);
     
-      /*
-       * Generate HATEOAS links for surrounding pages.
-       */
-      const links = {};
-      if (page < lastPage) {
-        links.nextPage = `/courses?page=${page + 1}`;
-        links.lastPage = `/courses?page=${lastPage}`;
-      }
-      if (page > 1) {
-        links.prevPage = `/courses?page=${page - 1}`;
-        links.firstPage = '/courses?page=1';
-      }
-    
-      /*
-       * Construct and send response.
-       */
-      res.status(200).json({
-        course: pageBusinesses, //???
-        pageNumber: coursePage,
+      const response = {
+        courses: courses,
+        pageNumber: pageNumber,
         totalPages: lastPage,
         pageSize: numPerPage,
         totalCount: lengthOfCourses,
         links: links
-      });
-  
+      }
+      return resolve(response);
     }
-    catch{
-  
+    catch (error) {
+      return reject(await handleCourseError(error))
     }
-
   });
 }
 
@@ -108,57 +84,20 @@ exports.getAllCourses = (page,subject,number,term) => {
 
 exports.getAssignmentsByCourseId = (id) => {
   return new Promise(async (resolve, reject) => {
-      //Untested/ likely unfinished
-    try{
-      const courseExist = await Course.countDocuments({id: id }).count().exec(); //ensure id exists
-      if (courseExist != 1){
-        throw new NotFoundError('Course not found.');
-      }
-      //not sure if assignment count is necessary
-      //const assignmentCount = await Assignment.countDocuments({courseId: id }).count().exec()
-
-      //check all assignments and find all that match, and store them into a variable?
-      const foundAssignments = await Assignment.find({courseId: id})
-      // Should I push them into a array and then put t into a response?
-      // for (let i = 0; i < foundAssignments.length; i++) {
-      //   ???
-      // } 
+    try {
+      const course = await getCourseObjectById(id);
+      const assignments = course.assignments;
 
       const response = {
         courseId: id,
-        assignments: foundAssignments
+        assignments: assignments
       };
-      resolve(response);
 
-    }
-    catch (error) {
-      console.log(error)
-      if (!(error instanceof ServerError)) {
-        return reject(new ServerError('An error occurred while creating a new User.'));
-      }
-      return reject(error);
-    }
+      return resolve(response);
 
-// Keeping around just in case
-//     var examples = {};
-//     examples['application/json'] = {
-//   "assignments" : [ {
-//     "due" : "2022-06-14T17:00:00-07:00",
-//     "title" : "Assignment 3",
-//     "courseId" : "123",
-//     "points" : 100
-//   }, {
-//     "due" : "2022-06-14T17:00:00-07:00",
-//     "title" : "Assignment 3",
-//     "courseId" : "123",
-//     "points" : 100
-//   } ]
-// };
-//     if (Object.keys(examples).length > 0) {
-//       resolve(examples[Object.keys(examples)[0]]);
-//     } else {
-//       resolve();
-//     }
+    } catch (error) {
+      return reject(await handleCourseError(error));
+    }
   });
 }
 
@@ -173,14 +112,11 @@ exports.getAssignmentsByCourseId = (id) => {
 
 exports.getCourseById = (id) => {
   return new Promise(async (resolve, reject) => {
-    //Untested
     try{
-      const courseExist = await Course.countDocuments({id: id }).count().exec(); //ensure id exists
-      if (courseExist != 1){
+      const foundCourse = await Course.findById({_id: id})
+      if (!foundCourse){
         throw new NotFoundError('Course not found.');
       }
-      //does it need error checking if in try/except block?
-      const foundCourse = await Course.findById({id: id})
       const response = {
         id: foundCourse._id,
         subject: foundCourse.subject,
@@ -189,31 +125,11 @@ exports.getCourseById = (id) => {
         term: foundCourse.term,
         instructorId: foundCourse.instructorId
       };
-      resolve(response)
-      
+      return resolve(response)
     }
     catch (error){
-      console.log(error)
-      if (!(error instanceof ServerError)) {
-        return reject(new ServerError('An error occurred while creating a new User.'));
-      }
-      return reject(error);
+      return reject(await handleCourseError(error));
     }
-
-    //prior example code, keeping around until tested
-//     var examples = {};
-//     examples['application/json'] = {
-//   "number" : "493",
-//   "subject" : "CS",
-//   "term" : "sp22",
-//   "title" : "Cloud Application Development",
-//   "instructorId" : "123"
-// };
-//     if (Object.keys(examples).length > 0) {
-//       resolve(examples[Object.keys(examples)[0]]);
-//     } else {
-//       resolve();
-//     }
   });
 }
 
@@ -226,34 +142,16 @@ exports.getCourseById = (id) => {
  * returns String
  **/
 
-exports.getRosterByCourseId = (id) => {
+exports.getRosterByCourseId = (id, res) => {
   return new Promise(async (resolve, reject) => {
-    //Unfinished
     try{
-      const courseExist = await Course.countDocuments({id: id }).count().exec(); //ensure id exists
-      if (courseExist != 1){
-        throw new NotFoundError('Course not found.');
-      }
-      //find all students related to course
-      const foundStudents = await User.find({courseId: id, role: "student"})
+      const course = await getCourseObjectById(id);
+      const studentData = await getStudentDataByIds(course.students);
 
-      //LOGIC TO LOOP THROUGH AND ADD THEM TO CSV FILE HERE
+      createAndStreamRoster(res, course, studentData);
+    } catch (error) {
+      return reject(await handleCourseError(error));
     }
-    catch (error) {
-      console.log(error)
-      if (!(error instanceof ServerError)) {
-        return reject(new ServerError('An error occurred while creating a new User.'));
-      }
-      return reject(error);
-    }
-    //example kept for testing purposes
-    // var examples = {};
-    // examples['application/json'] = "123,\"Jane Doe\",doej@oregonstate.edu\n...\n";
-    // if (Object.keys(examples).length > 0) {
-    //   resolve(examples[Object.keys(examples)[0]]);
-    // } else {
-    //   resolve();
-    // }
   });
 }
 
@@ -268,47 +166,23 @@ exports.getRosterByCourseId = (id) => {
 
 exports.getStudentsByCourseId = (id) => {
   return new Promise(async (resolve, reject) => {
-    //Unfinished
-    try{
-      const courseExist = await Course.countDocuments({id: id }).count().exec(); //ensure id exists
-      if (courseExist != 1){
+    try {
+
+      const course = await Course.findById(id);
+      if (!course){
         throw new NotFoundError('Course not found.');
       }
-      const foundStudents = await User.find({courseId: id, role: "student"})
 
       const response = {
         courseId: id,
-        students: foundStudents
+        students: course.students
       };
-      resolve(response);
+
+      return resolve(response);
     }
     catch (error) {
-      console.log(error)
-      if (!(error instanceof ServerError)) {
-        return reject(new ServerError('An error occurred while creating a new User.'));
-      }
-      return reject(error);
+      return reject(await handleCourseError(error));
     }
-    //keeping for testing purposes
-//     var examples = {};
-//     examples['application/json'] = {
-//   "students" : [ {
-//     "password" : "hunter2",
-//     "role" : "student",
-//     "name" : "Jane Doe",
-//     "email" : "doej@oregonstate.edu"
-//   }, {
-//     "password" : "hunter2",
-//     "role" : "student",
-//     "name" : "Jane Doe",
-//     "email" : "doej@oregonstate.edu"
-//   } ]
-// };
-//     if (Object.keys(examples).length > 0) {
-//       resolve(examples[Object.keys(examples)[0]]);
-//     } else {
-//       resolve();
-//     }
   });
 }
 
@@ -323,7 +197,6 @@ exports.getStudentsByCourseId = (id) => {
 
 exports.removeCourseById = (id) => {
   return new Promise(async (resolve, reject) => {
-    //Untested
     try{
       const courseExist = await Course.countDocuments({ _id: id });
 
@@ -352,37 +225,33 @@ exports.removeCourseById = (id) => {
 
 exports.updateCourseById = (body,id) => {
   return new Promise(async (resolve, reject) => {
-    //Untested
-    try{
-      const {role, auth_role} = body;
-      if (typeof(role) != 'string' || typeof(auth_role) != 'string') {
-        throw new ValidationError('The request body was either not present or did not contain a valid User object.');
-      }
-      if (auth_role != 'admin') { //difference between role and auth_role?
-        throw new PermissionError('The request was not authorized.');
-      }
-
+    try {
       const courseFields = extractValidFields(body, Course);
-      const updatedCourse = await Course.updateOne({_id: id }, courseFields); // This might not be the exact way to do this
+      const updatedCourse = await Course.findOneAndUpdate(
+        { _id: id },
+        { $set: courseFields },
+        { new: true, runValidators: true }
+      );
+      if (!updatedCourse) {
+        throw new NotFoundError('Course not found.');
+      }
       const response = {
         id: updatedCourse._id,
         subject: updatedCourse.subject,
         number: updatedCourse.number,
         title: updatedCourse.title,
         term: updatedCourse.term,
-        instructorId: updatedCourse.instructorId
+        instructorId: updatedCourse.instructorId,
+        links: {
+          course: `/courses/${updatedCourse._id}`
+        }
       };
 
-      resolve(response);
+      return resolve(response);
     }
     catch (error) {
-      console.log(error)
-      if (!(error instanceof ServerError)) {
-        return reject(new ServerError('An error occurred while creating a new User.'));
-      }
-      return reject(error);
+      return reject(await handleCourseError(error));
     }
-
   });
 }
 
@@ -397,45 +266,31 @@ exports.updateCourseById = (body,id) => {
  * no response value expected for this operation
  **/
 
-exports.updateEnrollmentByCourseId = (body,id) => {
+exports.updateEnrollmentByCourseId = (body, id) => {
   return new Promise(async (resolve, reject) => {
-    //Untested
-    try{
-      //NEEDS TO UPDATE TO HAVE AUTHORIZATION AS RELEVANT INSTRUCTOR OR ADMIN
-      const courseExist = await Course.countDocuments({_id: id }).count().exec(); //ensure id exists
-      if (courseExist != 1){
+    try {
+      if (!body.add && !body.remove) {
+        throw new ValidationError('The request body was either not present or did not contain all the required fields.');
+      }
+
+      const course = await Course.findById(id);
+      if (!course){
         throw new NotFoundError('Course not found.');
       }
-      const {role, auth_role} = body;
-      if (typeof(role) != 'string' || typeof(auth_role) != 'string') {
-        throw new ValidationError('The request body was either not present or did not contain a valid User object.');
-      }
-      if (auth_role != 'admin' || (auth_role != 'instructor')) { //difference between role and auth_role?
-        throw new PermissionError('The request was not authorized.');
-      }
 
+      await updateEnrollmentForCourseId(id, body);
 
+      const response = {
+        message: 'Enrollment updated successfully.',
+        links: {
+          course: `/courses/${id}`
+        }
+      };
 
-      for (let i = 0; i < body["add"].length; i++) {
-        //add user onto courses students array(push operator?)
-        await Courses.updateOne({_id: id}, {$push: {students: body["add"][i].push}})
-        //add course to student courses array
-        await User.updateOne({_id: body["add"][i]}, {$push: {courses: body["add"][i]}})
-      }
-      for (let i = 0; i < body["remove"].length; i++) {
-        //remove user onto courses students array(push operator?)
-        await Courses.updateOne({_id: id}, {$pull: {students: body["add"][i].push}})
-        //remove course to student courses array
-        await User.updateOne({_id: body["add"][i]}, {$push: {courses: body["add"][i]}})
-      } 
-      resolve();
+      return resolve(response);
     }
     catch (error) {
-      console.log(error)
-      if (!(error instanceof ServerError)) {
-        return reject(new ServerError('An error occurred while creating a new User.'));
-      }
-      return reject(error);
+      return reject(await handleCourseError(error));
     }
   });
 }
