@@ -24,7 +24,7 @@ const { Assignment } = require('./models/assignment.js');
 const { Submission } = require('./models/submission.js');
 const { Error } = require('./models/error.js');
 const bcrypt = require('bcrypt');
-const faker = require('faker');
+const { faker } = require('@faker-js/faker');
 
 const mongoHost = process.env.MONGO_HOST || 'localhost';
 const mongoPort = process.env.MONGO_PORT || 27017;
@@ -89,17 +89,12 @@ async function createMongoUser(username, password) {
 }
 
 async function generateFakeAssignments(courses, numAssignments) {
-  const fakeAssignments = [];
-  for (let i = 0; i < numAssignments; i++) {
-    const course = courses[Math.floor(Math.random() * courses.length)];
-    fakeAssignments.push({
-      courseId: course._id,
-      title: faker.lorem.words(3),
-      points: faker.random.number({ min: 10, max: 100 }),
-      due: faker.date.future(),
-    });
-  }
-  return fakeAssignments;
+  return faker.helpers.multiple(() => ({    
+    courseId: faker.helpers.arrayElement(courses)._id,
+    title: faker.lorem.words(3),
+    points: faker.number.int({ min: 10, max: 100 }),
+    due: faker.date.future(),
+  }), { count: numAssignments });
 }
 
 async function generateAssignments(numAssignments = 10) {
@@ -119,18 +114,13 @@ async function generateAssignments(numAssignments = 10) {
 
 
 async function generateFakeCourses(instructors, numCourses) {
-  const fakeCourses = [];
-  for (let i = 0; i < numCourses; i++) {
-    const instructor = instructors[Math.floor(Math.random() * instructors.length)];
-    fakeCourses.push({
-      subject: faker.random.arrayElement(['CS', 'MATH', 'PHYS', 'ENG', 'HIST']),
-      title: faker.lorem.words(3),
-      number: faker.random.number({ min: 1000, max: 9999 }).toString(),
-      instructorId: instructor._id,
-      term: faker.random.arrayElement(['sp24', 'su24', 'fa24', 'wi24']),
-    });
-  }
-  return fakeCourses;
+  return faker.helpers.multiple(() => ({
+    subject: faker.helpers.arrayElement(['CS', 'MATH', 'PHYS', 'ENG', 'HIST']),
+    title: faker.lorem.words(3),
+    number: faker.string.numeric({ allowLeadingZeros: false, length: 4 }),
+    instructorId: faker.helpers.arrayElement(instructors)._id,
+    term: faker.helpers.arrayElement(['sp24', 'su24', 'fa24', 'wi24']),
+  }), { cound: numCourses });
 }
 
 async function generateCourses(numCourses = 10) {
